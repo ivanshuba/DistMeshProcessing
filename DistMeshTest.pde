@@ -19,12 +19,15 @@ void setup() {
   // float y = PApplet.sin(theta) * radius;
   // return new PVector(centerX + x, centerY + y);
   ArrayList<TPoint> points = new ArrayList<TPoint>();
-  for(int i = 0; i < 20; i++) {
+  for(int i = 0; i < 50; i++) {
     float normalizedIndex = (float) i / 100;
-    float theta = normalizedIndex * 6 * PConstants.TWO_PI;
     float radius = normalizedIndex * width / 2f;
-
-    TPoint point = new TPoint(random(width * 0.25, width * 0.75), random(height * 0.25, height * 0.75));
+    float theta = normalizedIndex * 6 * PConstants.TWO_PI;
+    float x = cos(theta) * radius;
+    float y = sin(theta) * radius;
+    float a = 20;
+    //TPoint point = new TPoint(random(width * 0.35, width * 0.65), random(height * 0.35, height * 0.65));
+    TPoint point = new TPoint(width * 0.5 + x, height * 0.5 + y);
     points.add(point);
   }
 
