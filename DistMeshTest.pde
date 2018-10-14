@@ -206,8 +206,8 @@ public class Triangle {
 public class Triangulator {
   public ArrayList<TPoint>   points;
   public ArrayList<Triangle> triangles;
-  public ArrayList<TEdge>    edges;
-  public Triangle superTriangle;
+  public ArrayList<TEdge>    edgeBuffer;
+  public Triangle            superTriangle;
 
   public Triangulator(ArrayList<TPoint> points) {
     this.points = points;
@@ -269,7 +269,7 @@ public class Triangulator {
     /*
       Include each point one at a time into the existing mesh
     */
-    edges = new ArrayList<TEdge>();
+    edgeBuffer = new ArrayList<TEdge>();
     for (TPoint p : points) {
       TPoint circle = new TPoint();
       /*
@@ -278,7 +278,7 @@ public class Triangulator {
         three edges of that triangle are added to the edge buffer
         and that triangle is removed.
       */
-      edges.clear();
+      edgeBuffer.clear();
       for (int j = triangles.size() - 1; j >= 0; j--) {
         Triangle t = (Triangle) triangles.get(j);
         if (complete.contains(t)) {
@@ -291,9 +291,9 @@ public class Triangulator {
           complete.add(t);
         }
         if (inside) {
-          edges.add(new TEdge(t.p1, t.p2));
-          edges.add(new TEdge(t.p2, t.p3));
-          edges.add(new TEdge(t.p3, t.p1));
+          edgeBuffer.add(new TEdge(t.p1, t.p2));
+          edgeBuffer.add(new TEdge(t.p2, t.p3));
+          edgeBuffer.add(new TEdge(t.p3, t.p1));
           triangles.remove(j);
         }
       }
@@ -303,10 +303,10 @@ public class Triangulator {
         Note: if all triangles are specified anticlockwise then all
         interior edges are opposite pointing in direction.
       */
-      for (int j = 0; j < edges.size() - 1; j++) {
-        TEdge e1 = (TEdge) edges.get(j);
-        for (int k = j + 1; k < edges.size(); k++) {
-          TEdge e2 = (TEdge) edges.get(k);
+      for (int j = 0; j < edgeBuffer.size() - 1; j++) {
+        TEdge e1 = (TEdge) edgeBuffer.get(j);
+        for (int k = j + 1; k < edgeBuffer.size(); k++) {
+          TEdge e2 = (TEdge) edgeBuffer.get(k);
           if (e1.p1 == e2.p2 && e1.p2 == e2.p1) {
             e1.p1 = null;
             e1.p2 = null;
@@ -328,8 +328,8 @@ public class Triangulator {
         Skipping over any tagged edges.
         All edges are arranged in clockwise order.
       */
-      for (int j = 0; j < edges.size(); j++) {
-        TEdge e = (TEdge) edges.get(j);
+      for (int j = 0; j < edgeBuffer.size(); j++) {
+        TEdge e = (TEdge) edgeBuffer.get(j);
         if (e.p1 == null || e.p2 == null) {
           continue;
         }
@@ -350,7 +350,7 @@ public class Triangulator {
 
     System.out.println();
     System.out.printf("Triangulator.points.size()    = %-3d\n", points.size());
-    System.out.printf("Triangulator.edges.size()     = %-3d\n", edges.size());
+    System.out.printf("Triangulator.edgeBuffer.size()     = %-3d\n", edgeBuffer.size());
     System.out.printf("Triangulator.triangles.size() = %-3d\n", triangles.size());
     System.out.printf("Triangulator.complete.size() = %-3d\n", complete.size());
     
