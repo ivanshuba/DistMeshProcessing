@@ -68,8 +68,6 @@ void draw() {
 public class TPoint extends PVector {
   //public float x, y, z;
   ArrayList<TPoint> connectedPoints;
-  PVector force;
-  float stiffness = 1.2;
 
   public TPoint() {
     connectedPoints = new ArrayList<TPoint>();
