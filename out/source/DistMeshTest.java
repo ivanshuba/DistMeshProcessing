@@ -32,7 +32,6 @@ Triangulator triangulator;
 
 public void setup() {
   
-  
 
   // float theta = normalizedIndex * 6 * PConstants.TWO_PI;
   // float radius = normalizedIndex * fieldWidth / 2f;
@@ -42,15 +41,26 @@ public void setup() {
   // float y = PApplet.sin(theta) * radius;
   // return new PVector(centerX + x, centerY + y);
   ArrayList<TPoint> points = new ArrayList<TPoint>();
-  for(int i = 0; i < 50; i++) {
-    float normalizedIndex = (float) i / 100;
-    float radius = normalizedIndex * width / 2f;
-    float theta = normalizedIndex * 6 * PConstants.TWO_PI;
-    float x = cos(theta) * radius;
-    float y = sin(theta) * radius;
-
+  float x0 = width * 0.5f; // spiral center X
+  float y0 = height * 0.5f; // spiral center Y
+  float radius = (width > height) ? width * 0.5f : height * 0.5f;
+  float nturns = 5;   // non-dimensional
+  float radialStep = radius / nturns; // px
+  int npoints = 100;
+  for(int i = 0; i < npoints; i++) {
+    // float normalizedIndex = (float) i / 100;
+    // float radius = normalizedIndex * width / 2f;
+    // float theta = normalizedIndex * 6 * PConstants.TWO_PI;
+    // float x = cos(theta) * radius;
+    // float y = sin(theta) * radius;
+    // float a = 20;
+    float theta = map(i, 0, npoints - 1, 0, TWO_PI * nturns);
+    //println(i + ": " + theta + ": " + degrees(theta));
+    float rho = radialStep / (TWO_PI) * theta;
+    float x = x0 + rho * cos(theta);
+    float y = y0 + rho * sin(theta);
     //TPoint point = new TPoint(random(width * 0.35, width * 0.65), random(height * 0.35, height * 0.65));
-    TPoint point = new TPoint(width * 0.5f + x, height * 0.5f + y);
+    TPoint point = new TPoint(x, y);
     points.add(point);
   }
 
@@ -70,7 +80,7 @@ public void draw() {
     float y = (triangle.p1.y + triangle.p2.y + triangle.p3.y) / 3;
     pushStyle();
     textAlign(CENTER, CENTER);
-    textSize(12);
+    textSize(8);
     fill(0);
     text(triangulator.triangles.indexOf(triangle), x, y);
     popStyle();
@@ -448,7 +458,7 @@ public class Triangulator {
 
   }
 }
-  public void settings() {  size(600, 600); }
+  public void settings() {  size(400, 400); }
   static public void main(String[] passedArgs) {
     String[] appletArgs = new String[] { "DistMeshTest" };
     if (passedArgs != null) {

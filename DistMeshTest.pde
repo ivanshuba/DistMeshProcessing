@@ -8,8 +8,7 @@ import processing.core.PApplet;
 Triangulator triangulator;
 
 void setup() {
-  size(600, 600);
-  
+  size(400, 400);
 
   // float theta = normalizedIndex * 6 * PConstants.TWO_PI;
   // float radius = normalizedIndex * fieldWidth / 2f;
@@ -19,15 +18,26 @@ void setup() {
   // float y = PApplet.sin(theta) * radius;
   // return new PVector(centerX + x, centerY + y);
   ArrayList<TPoint> points = new ArrayList<TPoint>();
-  for(int i = 0; i < 50; i++) {
-    float normalizedIndex = (float) i / 100;
-    float radius = normalizedIndex * width / 2f;
-    float theta = normalizedIndex * 6 * PConstants.TWO_PI;
-    float x = cos(theta) * radius;
-    float y = sin(theta) * radius;
-    float a = 20;
+  float x0 = width * 0.5; // spiral center X
+  float y0 = height * 0.5; // spiral center Y
+  float radius = (width > height) ? width * 0.5 : height * 0.5;
+  float nturns = 5;   // non-dimensional
+  float radialStep = radius / nturns; // px
+  int npoints = 100;
+  for(int i = 0; i < npoints; i++) {
+    // float normalizedIndex = (float) i / 100;
+    // float radius = normalizedIndex * width / 2f;
+    // float theta = normalizedIndex * 6 * PConstants.TWO_PI;
+    // float x = cos(theta) * radius;
+    // float y = sin(theta) * radius;
+    // float a = 20;
+    float theta = map(i, 0, npoints - 1, 0, TWO_PI * nturns);
+    //println(i + ": " + theta + ": " + degrees(theta));
+    float rho = radialStep / (TWO_PI) * theta;
+    float x = x0 + rho * cos(theta);
+    float y = y0 + rho * sin(theta);
     //TPoint point = new TPoint(random(width * 0.35, width * 0.65), random(height * 0.35, height * 0.65));
-    TPoint point = new TPoint(width * 0.5 + x, height * 0.5 + y);
+    TPoint point = new TPoint(x, y);
     points.add(point);
   }
 
@@ -47,7 +57,7 @@ void draw() {
     float y = (triangle.p1.y + triangle.p2.y + triangle.p3.y) / 3;
     pushStyle();
     textAlign(CENTER, CENTER);
-    textSize(12);
+    textSize(8);
     fill(0);
     text(triangulator.triangles.indexOf(triangle), x, y);
     popStyle();
@@ -253,43 +263,34 @@ public class Triangulator {
     // find out what is larger - width or height of the boundary rectangle
     float dmax = (dx > dy) ? dx : dy;
     // find the center of the boundary rectangle
-    float xmid = (xmax + xmin) / 2.0f;
-    float ymid = (ymax + ymin) / 2.0f;
-    // set up the SuperTriangle
+    float xmid = (xmax + xmin) * 0.5f;
+    float ymid = (ymax + ymin) * 0.5f;
+    // set up the SuperTriangle ...
     superTriangle = new Triangle();
     superTriangle.p1 = new TPoint(xmid - 2.0f * dmax, ymid - dmax, 0.0f);
     superTriangle.p2 = new TPoint(xmid, ymid + 2.0f * dmax, 0.0f);
     superTriangle.p3 = new TPoint(xmid + 2.0f * dmax, ymid - dmax, 0.0f);
+    // ... and adding it to the triangles arraylist
     triangles.add(superTriangle);
-    // System.out.printf("Triangulator.superTriangle.p1.x    = %-4.4f\n", superTriangle.p1.x);
-    // System.out.printf("Triangulator.superTriangle.p1.y    = %-4.4f\n", superTriangle.p1.y);
-    // System.out.printf("Triangulator.superTriangle.p2.x    = %-4.4f\n", superTriangle.p2.x);
-    // System.out.printf("Triangulator.superTriangle.p2.y    = %-4.4f\n", superTriangle.p2.y);
-    // System.out.printf("Triangulator.superTriangle.p3.x    = %-4.4f\n", superTriangle.p3.x);
-    // System.out.printf("Triangulator.superTriangle.p3.y    = %-4.4f\n", superTriangle.p3.y);
-    
 
+    // Set up the edge buffer.
+    edgeBuffer = new ArrayList<TEdge>();
+  
     /*
       Include each point one at a time into the existing mesh
     */
-    edgeBuffer = new ArrayList<TEdge>();
     for (TPoint p : points) {
       TPoint circle = new TPoint();
-      /*
-        Set up the edge buffer.
-        If the point (xp, yp) lies inside the circumcircle then the
-        three edges of that triangle are added to the edge buffer
-        and that triangle is removed.
-      */
+      // If the point (xp, yp) lies inside the circumcircle then the
+      // three edges of that triangle are added to the edge buffer
+      // and that triangle is removed.
       edgeBuffer.clear();
       for (int j = triangles.size() - 1; j >= 0; j--) {
         Triangle t = (Triangle) triangles.get(j);
         if (complete.contains(t)) {
           continue;
         }
-
         boolean inside = circumCircle(p, t, circle);
-
         if (circle.x + circle.z < p.x) {
           complete.add(t);
         }
@@ -300,12 +301,9 @@ public class Triangulator {
           triangles.remove(j);
         }
       }
-
-      /*
-        Tag multiple edges
-        Note: if all triangles are specified anticlockwise then all
-        interior edges are opposite pointing in direction.
-      */
+      // Tag multiple edges
+      // Note: if all triangles are specified anticlockwise then all
+      // interior edges are opposite pointing in direction.
       for (int j = 0; j < edgeBuffer.size() - 1; j++) {
         TEdge e1 = (TEdge) edgeBuffer.get(j);
         for (int k = j + 1; k < edgeBuffer.size(); k++) {
@@ -325,12 +323,9 @@ public class Triangulator {
           }
         }
       }
-
-      /*
-        Form new triangles for the current point
-        Skipping over any tagged edges.
-        All edges are arranged in clockwise order.
-      */
+      // Form new triangles for the current point.
+      // Skipping over any tagged edges.
+      // All edges are arranged in clockwise order.
       for (int j = 0; j < edgeBuffer.size(); j++) {
         TEdge e = (TEdge) edgeBuffer.get(j);
         if (e.p1 == null || e.p2 == null) {
@@ -338,7 +333,6 @@ public class Triangulator {
         }
         triangles.add(new Triangle(e.p1, e.p2, p));
       }
-
     }
 
     /*
