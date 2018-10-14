@@ -1,7 +1,14 @@
-# Compiled class file
+# Compiled class files
 *.class
 **/*.class
+
+# All files in '.vscode' folder
 .vscode/
 **/.vscode/
 **/.vscode/*
-**/out/**/*.*
+
+# All files in 'out' folder
+out/
+**/out/
+**/out/*
+

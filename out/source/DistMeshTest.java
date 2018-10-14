@@ -286,43 +286,34 @@ public class Triangulator {
     // find out what is larger - width or height of the boundary rectangle
     float dmax = (dx > dy) ? dx : dy;
     // find the center of the boundary rectangle
-    float xmid = (xmax + xmin) / 2.0f;
-    float ymid = (ymax + ymin) / 2.0f;
-    // set up the SuperTriangle
+    float xmid = (xmax + xmin) * 0.5f;
+    float ymid = (ymax + ymin) * 0.5f;
+    // set up the SuperTriangle ...
     superTriangle = new Triangle();
     superTriangle.p1 = new TPoint(xmid - 2.0f * dmax, ymid - dmax, 0.0f);
     superTriangle.p2 = new TPoint(xmid, ymid + 2.0f * dmax, 0.0f);
     superTriangle.p3 = new TPoint(xmid + 2.0f * dmax, ymid - dmax, 0.0f);
+    // ... and adding it to the triangles arraylist
     triangles.add(superTriangle);
-    // System.out.printf("Triangulator.superTriangle.p1.x    = %-4.4f\n", superTriangle.p1.x);
-    // System.out.printf("Triangulator.superTriangle.p1.y    = %-4.4f\n", superTriangle.p1.y);
-    // System.out.printf("Triangulator.superTriangle.p2.x    = %-4.4f\n", superTriangle.p2.x);
-    // System.out.printf("Triangulator.superTriangle.p2.y    = %-4.4f\n", superTriangle.p2.y);
-    // System.out.printf("Triangulator.superTriangle.p3.x    = %-4.4f\n", superTriangle.p3.x);
-    // System.out.printf("Triangulator.superTriangle.p3.y    = %-4.4f\n", superTriangle.p3.y);
-    
 
+    // Set up the edge buffer.
+    edgeBuffer = new ArrayList<TEdge>();
+  
     /*
       Include each point one at a time into the existing mesh
     */
-    edgeBuffer = new ArrayList<TEdge>();
     for (TPoint p : points) {
       TPoint circle = new TPoint();
-      /*
-        Set up the edge buffer.
-        If the point (xp, yp) lies inside the circumcircle then the
-        three edges of that triangle are added to the edge buffer
-        and that triangle is removed.
-      */
+      // If the point (xp, yp) lies inside the circumcircle then the
+      // three edges of that triangle are added to the edge buffer
+      // and that triangle is removed.
       edgeBuffer.clear();
       for (int j = triangles.size() - 1; j >= 0; j--) {
         Triangle t = (Triangle) triangles.get(j);
         if (complete.contains(t)) {
           continue;
         }
-
         boolean inside = circumCircle(p, t, circle);
-
         if (circle.x + circle.z < p.x) {
           complete.add(t);
         }
@@ -333,12 +324,9 @@ public class Triangulator {
           triangles.remove(j);
         }
       }
-
-      /*
-        Tag multiple edges
-        Note: if all triangles are specified anticlockwise then all
-        interior edges are opposite pointing in direction.
-      */
+      // Tag multiple edges
+      // Note: if all triangles are specified anticlockwise then all
+      // interior edges are opposite pointing in direction.
       for (int j = 0; j < edgeBuffer.size() - 1; j++) {
         TEdge e1 = (TEdge) edgeBuffer.get(j);
         for (int k = j + 1; k < edgeBuffer.size(); k++) {
@@ -358,12 +346,9 @@ public class Triangulator {
           }
         }
       }
-
-      /*
-        Form new triangles for the current point
-        Skipping over any tagged edges.
-        All edges are arranged in clockwise order.
-      */
+      // Form new triangles for the current point.
+      // Skipping over any tagged edges.
+      // All edges are arranged in clockwise order.
       for (int j = 0; j < edgeBuffer.size(); j++) {
         TEdge e = (TEdge) edgeBuffer.get(j);
         if (e.p1 == null || e.p2 == null) {
@@ -371,7 +356,6 @@ public class Triangulator {
         }
         triangles.add(new Triangle(e.p1, e.p2, p));
       }
-
     }
 
     /*
@@ -454,7 +438,11 @@ public class Triangulator {
     return drsqr <= rsqr;
   }
 
-  public void calculateForces() {
+  public void updateForces() {
+
+  }
+
+  public void updatePositions() {
 
   }
 }

@@ -415,7 +415,11 @@ public class Triangulator {
     return drsqr <= rsqr;
   }
 
-  public void calculateForces() {
+  public void updateForces() {
+
+  }
+
+  public void updatePositions() {
 
   }
 }
