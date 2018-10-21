@@ -1,3 +1,6 @@
+/*****************************************************************************************
+ *
+ *****************************************************************************************/
 public class TPoint extends PVector {
   //public float x, y, z;
   ArrayList<TPoint> connectedPoints;
@@ -37,6 +40,9 @@ public class TPoint extends PVector {
   }
 }
 
+/*****************************************************************************************
+ *
+ *****************************************************************************************/
 public class TEdge {
   public TPoint p1, p2;
 
@@ -61,6 +67,9 @@ public class TEdge {
   }
 }
 
+/*****************************************************************************************
+ *
+ *****************************************************************************************/
 public class Triangle {
 
   public TPoint p1, p2, p3;
@@ -148,7 +157,7 @@ public class Triangulator {
   public void triangulate() {
     // Initialize ArrayList for Triangles to be returned
     triangles = new ArrayList<Triangle>(); 
-    // Initialize HashSet for "complete" Triangles (???)
+    // Initialize HashSet for "complete" Triangle set (why??? only for checking "if it is already in the set?")
     HashSet<Triangle> complete = new HashSet<Triangle>(); 
 
     ///////////////////////////////////////////////////////////////////////////////////////////////// 
@@ -192,9 +201,14 @@ public class Triangulator {
     //
     ///////////////////////////////////////////////////////////////////////////////////////////////// 
 
-    // Set up the edge buffer.
+    ///////////////////////////////////////////////////////////////////////////////////////////////// 
+    //
+    // Start adding points and creating new triangles (using SuperTriangle as a basis for initial 
+    // caluations)
+    //
+    // 1. Set up the edge buffer.
     edgeBuffer = new ArrayList<TEdge>();
-    // Include each point one at a time into the existing mesh
+    // 2. Iterate through all the points in ArrayList. Process each point one at a time.
     for (TPoint p : points) {
       TPoint circle = new TPoint();
       // Set up the edge buffer.
@@ -219,13 +233,13 @@ public class Triangulator {
           triangles.remove(i);
         }
       }
-      // Tag multiple edges
+      // Tag (remove???) multiple edges
       // Note: if all triangles are specified anticlockwise then all
       // interior edges are opposite pointing in direction.
-      for (int j = 0; j < edgeBuffer.size() - 1; j++) {
-        TEdge e1 = (TEdge) edgeBuffer.get(j);
-        for (int k = j + 1; k < edgeBuffer.size(); k++) {
-          TEdge e2 = (TEdge) edgeBuffer.get(k);
+      for (int i = 0; i < edgeBuffer.size() - 1; i++) {
+        TEdge e1 = (TEdge) edgeBuffer.get(i);
+        for (int j = i + 1; j < edgeBuffer.size(); j++) {
+          TEdge e2 = (TEdge) edgeBuffer.get(j);
           if (e1.p1 == e2.p2 && e1.p2 == e2.p1) {
             e1.p1 = null;
             e1.p2 = null;
@@ -244,8 +258,8 @@ public class Triangulator {
       // Form new triangles for the current point.
       // Skipping over any tagged edges.
       // All edges are arranged in clockwise order.
-      for (int j = 0; j < edgeBuffer.size(); j++) {
-        TEdge e = (TEdge) edgeBuffer.get(j);
+      for (int i = 0; i < edgeBuffer.size(); i++) {
+        TEdge e = (TEdge) edgeBuffer.get(i);
         if (e.p1 == null || e.p2 == null) {
           continue;
         }
@@ -264,11 +278,26 @@ public class Triangulator {
     }
 
     System.out.println();
-    System.out.printf("Triangulator.points.size()    = %-3d\n", points.size());
-    System.out.printf("Triangulator.edgeBuffer.size()     = %-3d\n", edgeBuffer.size());
-    System.out.printf("Triangulator.triangles.size() = %-3d\n", triangles.size());
-    System.out.printf("Triangulator.complete.size() = %-3d\n", complete.size());
-    
+    System.out.printf("points.size()    = %-3d\n", points.size());
+    System.out.printf("edgeBuffer.size()= %-3d\n", edgeBuffer.size());
+    System.out.printf("triangles.size() = %-3d\n", triangles.size());
+    System.out.printf("complete.size()  = %-3d\n", complete.size());
+    System.out.println();
+
+    for (Triangle t : triangles) {
+      System.out.printf("[%3d]: [%3d][%3d][%3d]\n", triangles.indexOf(t), points.indexOf(t.p1), points.indexOf(t.p2), points.indexOf(t.p3));
+    } 
+    println("-------------------------------------------------------------------------------------");
+    Iterator iterator = complete.iterator();
+    int counter = 0;
+    while (iterator.hasNext()) {
+      Triangle t = (Triangle) iterator.next();
+      System.out.printf("[%3d]: [%3d][%3d][%3d]\n", counter++, points.indexOf(t.p1), points.indexOf(t.p2), points.indexOf(t.p3));
+    }
+    // ArrayList<TEdge> edges = new ArrayList<TEdge>();
+    // for (Triangle t : triangles) {
+    //   //System.out.printf("[%3d]: [%3d][%3d][%3d]\n", triangles.indexOf(t), points.indexOf(t.p1), points.indexOf(t.p2), points.indexOf(t.p3));
+    // } 
   }
 
   private class XComparator implements Comparator<TPoint> {
@@ -287,7 +316,7 @@ public class Triangulator {
 
   /////////////////////////////////////////////////////////////////////////////////////
   // Author: Ivan Shuba
-  // This is a modified version taken from JFrameP.
+  // This is a modified version, taken from JFrameP.
 	// Returns absolute position of a center point as PVector.
 	public PVector getCenterPoint(PVector sp, PVector ep, PVector mp) {
  		PVector ar, aa, bb;
@@ -312,6 +341,8 @@ public class Triangulator {
 		}
 	}
 
+  /////////////////////////////////////////////////////////////////////////////////////
+  // Original version of the circumcircle test
   private boolean circumCircle(TPoint p, Triangle t, TPoint circle) {
 
     float m1, m2, mx1, mx2, my1, my2;
