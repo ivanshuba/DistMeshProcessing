@@ -57,10 +57,11 @@ void spiralSeed(ArrayList<TPoint> points) {
 
 void draw() {
   background(230);
-  pushMatrix();    // Store a copy of the unzoomed screen transformation.
-  zoomer.transform(); // Enable the zooming/panning.
+  pushMatrix();                          // Store a copy of the unzoomed screen transformation.
+  zoomer.transform();                    // Enable the zooming/panning.
   mousePos = zoomer.getMouseCoord();
   drawTriangles();
+  popMatrix();                           // Restore the unzoomed screen transformation.
   surface.setTitle(mousePos.x + ":" + mousePos.y);
 }
 
@@ -136,7 +137,7 @@ void drawTriangles(){
   // line(triangulator.superTriangle.p2.x, triangulator.superTriangle.p2.y, triangulator.superTriangle.p3.x, triangulator.superTriangle.p3.y);    
   // line(triangulator.superTriangle.p3.x, triangulator.superTriangle.p3.y, triangulator.superTriangle.p1.x, triangulator.superTriangle.p1.y);    
   // popStyle();
-  popMatrix();    // Restore the unzoomed screen transformation.
+
 }
 
 
