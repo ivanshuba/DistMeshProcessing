@@ -11,7 +11,10 @@ ArrayList<TPoint> points;
 import org.gicentre.utils.move.*;    // For the zoomer.
 ZoomPan zoomer;    // This should be declared outside any methods.
 PVector mousePos;  // Stores the mouse position.
-boolean drawTriangles, drawComplete = true;
+boolean drawTriangles = true;
+boolean drawPoints = true;
+boolean drawComplete = false;
+boolean drawText = false;
 double delay = millis();
 
 void setup() {
@@ -24,10 +27,10 @@ void setup() {
 
   points = new ArrayList<TPoint>();
   //spiralSeed(points);
-  randomSeed(points, 4);
+  randomSeed(points, 5);
 
-  triangulator = new Triangulator(points);
-  triangulator.triangulate();
+  triangulator = new Triangulator();
+  triangulator.triangulate(points);
 
 }
 
@@ -63,10 +66,19 @@ void draw() {
   drawTriangles();
   popMatrix();                           // Restore the unzoomed screen transformation.
   surface.setTitle(mousePos.x + ":" + mousePos.y);
+  drawDebugInfo();
+}
+
+void drawDebugInfo() {
+  fill(0);
+  textSize(10);
+  text("points.size():" + triangulator.points.size(), 10, 10);
+  text("triangles.size():" + triangulator.triangles.size(), 10, 20);
 }
 
 void drawTriangles(){
   if(drawTriangles) {
+    pushMatrix();
     for (Triangle triangle : triangulator.triangles) {
       pushStyle();
       strokeWeight(0.5f);
@@ -75,20 +87,24 @@ void drawTriangles(){
       line(triangle.p3.x, triangle.p3.y, triangle.p1.x, triangle.p1.y);
       float x = (triangle.p1.x + triangle.p2.x + triangle.p3.x) / 3;
       float y = (triangle.p1.y + triangle.p2.y + triangle.p3.y) / 3;
-      textAlign(CENTER, CENTER);
-      textSize(8);
-      fill(0);
-      text(
-        triangulator.triangles.indexOf(triangle) + ":" + 
-        triangulator.points.indexOf(triangle.p1) + "," + 
-        triangulator.points.indexOf(triangle.p2) + "," + 
-        triangulator.points.indexOf(triangle.p3)  
-        , x, y);
+      if (drawText) {
+        textAlign(CENTER, CENTER);
+        textSize(8);
+        fill(0);
+        text(
+          triangulator.triangles.indexOf(triangle) + ":" + 
+          triangulator.points.indexOf(triangle.p1) + "," + 
+          triangulator.points.indexOf(triangle.p2) + "," + 
+          triangulator.points.indexOf(triangle.p3)  
+          , x, y);
+      }
       popStyle();
     }
+    popMatrix();
   }
 
   if(drawComplete){
+    pushMatrix();
     for (Triangle triangle : triangulator.triangles) {
       pushStyle();
       if(triangulator.triangles.indexOf(triangle) == 0) {
@@ -103,33 +119,41 @@ void drawTriangles(){
       line(triangle.p3.x, triangle.p3.y, triangle.p1.x, triangle.p1.y);
       float x = (triangle.p1.x + triangle.p2.x + triangle.p3.x) / 3;
       float y = (triangle.p1.y + triangle.p2.y + triangle.p3.y) / 3;
-      textAlign(CENTER, CENTER);
-      textSize(8);
-      fill(0);
-      text(
-        triangulator.triangles.indexOf(triangle) + ":" + 
-        triangulator.points.indexOf(triangle.p1) + "," + 
-        triangulator.points.indexOf(triangle.p2) + "," + 
-        triangulator.points.indexOf(triangle.p3)  
-        , x, y);
+      if (drawText) {
+        textAlign(CENTER, CENTER);
+        textSize(8);
+        fill(0);
+        text(
+          triangulator.triangles.indexOf(triangle) + ":" + 
+          triangulator.points.indexOf(triangle.p1) + "," + 
+          triangulator.points.indexOf(triangle.p2) + "," + 
+          triangulator.points.indexOf(triangle.p3)  
+          , x, y);
+      }
       popStyle();
     }
+    popMatrix();
   }
 
-  for (TPoint p : triangulator.points) {
-    pushStyle();
-    textAlign(CENTER, CENTER);
-    textSize(8);
-    fill(0);
-    StringBuilder sb = new StringBuilder();
-    for (TPoint cp : p.connectedPoints) {
-      int cpindex = triangulator.points.indexOf(cp);
-      sb.append(cpindex + ",");
+  if (drawPoints) {
+    for (TPoint p : triangulator.points) {
+      pushStyle();
+      StringBuilder sb = new StringBuilder();
+      for (TPoint cp : p.connectedPoints) {
+        int cpindex = triangulator.points.indexOf(cp);
+        sb.append(cpindex + ",");
+      }
+      point(p.x, p.y);
+      //sb.deleteCharAt(sb.length() - 1);
+      int index = triangulator.points.indexOf(p);
+      if (drawText) {
+        textAlign(CENTER, CENTER);
+        textSize(8);
+        fill(0);
+        text(index + ":(" + sb.toString() + ")", p.x + 5, p.y + 5);
+      }
+      popStyle();
     }
-    //sb.deleteCharAt(sb.length() - 1);
-    int index = triangulator.points.indexOf(p);
-    text(index + ":(" + sb.toString() + ")", p.x + 5, p.y + 5);
-    popStyle();
   }
 
   // pushStyle();
@@ -140,12 +164,11 @@ void drawTriangles(){
 
 }
 
-
 void mousePressed() {
   if (mouseButton == RIGHT) {
-    if (millis() - delay > 300) {
+    if (millis() - delay > 100) {
       points.add(new TPoint(mousePos.x, mousePos.y));
-      triangulator.triangulate();
+      triangulator.triangulate(points);
       delay = millis();
     }
   }
@@ -159,5 +182,14 @@ void keyPressed() {
   if (key == '2') {
     drawTriangles = !drawTriangles;
     println("drawTriangles:" + drawTriangles);
+  }
+  if (key == 'd') {
+    triangulator.debug();
+  }
+  if (key == 't') {
+    drawText = !drawText;
+  }
+  if (key == 'p') {
+    drawPoints = !drawPoints;
   }
 }
