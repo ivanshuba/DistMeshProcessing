@@ -4,17 +4,18 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import processing.core.PApplet;
+import org.gicentre.utils.move.*;    // For the zoomer.
 
 Triangulator triangulator;
 ArrayList<TPoint> points;
 
-import org.gicentre.utils.move.*;    // For the zoomer.
 ZoomPan zoomer;    // This should be declared outside any methods.
 PVector mousePos;  // Stores the mouse position.
+
 boolean drawTriangles = true;
 boolean drawPoints = true;
 boolean drawComplete = false;
-boolean drawText = false;
+boolean drawText = true;
 double delay = millis();
 
 void setup() {
@@ -23,7 +24,7 @@ void setup() {
   textFont(createFont("courier", 128));
 
   zoomer = new ZoomPan(this);  // Initialise the zoomer.
-  zoomer.setMouseMask(SHIFT);  // Only zoom if the shift key is down.
+  //zoomer.setMouseMask(SHIFT);  // Only zoom if the shift key is down.
 
   points = new ArrayList<TPoint>();
   //spiralSeed(points);
@@ -31,7 +32,7 @@ void setup() {
 
   triangulator = new Triangulator();
   triangulator.triangulate(points);
-
+  triangulator.debug();
 }
 
 void randomSeed(ArrayList<TPoint> points, int npoints) {
@@ -82,38 +83,6 @@ void drawTriangles(){
     for (Triangle triangle : triangulator.triangles) {
       pushStyle();
       strokeWeight(0.5f);
-      line(triangle.p1.x, triangle.p1.y, triangle.p2.x, triangle.p2.y);
-      line(triangle.p2.x, triangle.p2.y, triangle.p3.x, triangle.p3.y);
-      line(triangle.p3.x, triangle.p3.y, triangle.p1.x, triangle.p1.y);
-      float x = (triangle.p1.x + triangle.p2.x + triangle.p3.x) / 3;
-      float y = (triangle.p1.y + triangle.p2.y + triangle.p3.y) / 3;
-      if (drawText) {
-        textAlign(CENTER, CENTER);
-        textSize(8);
-        fill(0);
-        text(
-          triangulator.triangles.indexOf(triangle) + ":" + 
-          triangulator.points.indexOf(triangle.p1) + "," + 
-          triangulator.points.indexOf(triangle.p2) + "," + 
-          triangulator.points.indexOf(triangle.p3)  
-          , x, y);
-      }
-      popStyle();
-    }
-    popMatrix();
-  }
-
-  if(drawComplete){
-    pushMatrix();
-    for (Triangle triangle : triangulator.triangles) {
-      pushStyle();
-      if(triangulator.triangles.indexOf(triangle) == 0) {
-        strokeWeight(3f);
-        stroke(20, 100, 20, 50);
-      } else {
-        strokeWeight(0.5f);
-        stroke(0);
-      }
       line(triangle.p1.x, triangle.p1.y, triangle.p2.x, triangle.p2.y);
       line(triangle.p2.x, triangle.p2.y, triangle.p3.x, triangle.p3.y);
       line(triangle.p3.x, triangle.p3.y, triangle.p1.x, triangle.p1.y);

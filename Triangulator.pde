@@ -145,10 +145,10 @@ public class Triangulator {
   public ArrayList<Triangle> triangles;
   public ArrayList<TEdge>    edgeBuffer;
   public Triangle            superTriangle;
-  public HashSet<Triangle>   complete;
 
   public Triangulator() {
   }
+
   /*
     Triangulation subroutine.
     Takes the ArrayList of vertices (TPoints) as an input.
@@ -159,8 +159,8 @@ public class Triangulator {
     this.points = points;
     // Initialize ArrayList for Triangles to be returned
     triangles = new ArrayList<Triangle>(); 
-    // Initialize HashSet for "complete" Triangle set (why??? only for checking "if it is already in the set?")
-    complete = new HashSet<Triangle>(); 
+    // Initialize HashSet for "complete" Triangle set 
+    HashSet<Triangle> complete = new HashSet<Triangle>(); 
 
     ///////////////////////////////////////////////////////////////////////////////////////////////// 
     //
@@ -308,7 +308,6 @@ public class Triangulator {
     System.out.printf("points.size()    = %-3d\n", points.size());
     System.out.printf("edgeBuffer.size()= %-3d\n", edgeBuffer.size());
     System.out.printf("triangles.size() = %-3d\n", triangles.size());
-    System.out.printf("complete.size()  = %-3d\n", complete.size());
     System.out.println();
 
     for (Triangle t : triangles) {
@@ -338,6 +337,10 @@ public class Triangulator {
     }
   }
 
+/*
+
+  This might be needed later for refactoring.
+
   /////////////////////////////////////////////////////////////////////////////////////
   // Author: Ivan Shuba
   // This is a modified version, taken from JFrameP.
@@ -364,9 +367,21 @@ public class Triangulator {
 			return new PVector(sp.x + ar.x, sp.y + ar.y);
 		}
 	}
+*/
 
   /////////////////////////////////////////////////////////////////////////////////////
-  // Original version of the circumcircle test
+  // 
+  // The original version of the circumcircle test.
+  //
+  // Note: Actually, because it was written in C, it is designed such way that it 
+  // "returns" several types of data.
+  // 1. The boolean value is passed directly as a returned value. It is equal true, if
+  //    the point 'p' is INSIDE of the circumscribed circle, more specifically, if the 
+  //    radius of circumscribed circle is greater than distance between the center of
+  //    this circle and the point 'p' that is passed as an argument.
+  // 2. Also, implicitly, the method also "returns" the coordinates of point 'circle'.
+  // 3. Also, implicitly, the radius of the circumscribed circle is "returned" as Z 
+  //    value of the point 'circle'.
   private boolean circumCircle(TPoint p, Triangle t, TPoint circle) {
 
     float m1, m2, mx1, mx2, my1, my2;
