@@ -90,7 +90,7 @@ void drawTriangles(){
       float y = (triangle.p1.y + triangle.p2.y + triangle.p3.y) / 3;
       if (drawText) {
         textAlign(CENTER, CENTER);
-        textSize(8);
+        textSize(12);
         fill(0);
         text(
           triangulator.triangles.indexOf(triangle) + ":" + 
@@ -119,7 +119,7 @@ void drawTriangles(){
       int index = triangulator.points.indexOf(p);
       if (drawText) {
         textAlign(CENTER, CENTER);
-        textSize(8);
+        textSize(12);
         fill(0);
         text(index + ":(" + sb.toString() + ")", p.x + 5, p.y + 5);
       }

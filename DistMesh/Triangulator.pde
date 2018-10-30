@@ -20,7 +20,7 @@
 public class Triangulator {
   public ArrayList<TPoint>   points;
   public ArrayList<Triangle> triangles;
-  public ArrayList<TEdge>    edgeBuffer;
+  public ArrayList<TEdge>    edges;
   public Triangle            superTriangle;
 
   public Triangulator() {
@@ -34,6 +34,8 @@ public class Triangulator {
    */
   public void triangulate(ArrayList<TPoint> points) {
     this.points = points;
+    // Initialize ArrayList for Edges to be returned
+    edges = new ArrayList<TEdge>();
     // Initialize ArrayList for Triangles to be returned
     triangles = new ArrayList<Triangle>(); 
     // Initialize HashSet for "complete" Triangle set 
@@ -47,7 +49,7 @@ public class Triangulator {
     // caluations)
     //
     // 1. Set up the edge buffer.
-    edgeBuffer = new ArrayList<TEdge>();
+    ArrayList<TEdge> edgeBuffer = new ArrayList<TEdge>();
     // 2. Iterate through all the points in ArrayList. Process each point one at a time.
     for (TPoint p : points) {
       TPoint circle = new TPoint();
@@ -117,27 +119,39 @@ public class Triangulator {
       }
     }
 
-    /*
-     * Collect connected points for each point
-     */
+    updateNeighbourPoints();
+    updateEdgeList();
+    //debug();
+  }
+
+  private void updateEdgeList() {
     for (TPoint p : points) {
-      // System.out.printf("[%3d]: \n", points.indexOf(p));
+      for (TPoint neighbour : p.getConnectedPoints()) {
+        if (neighbour.checkedPoints.contains(p) || p.checkedPoints.contains(neighbour)) {
+          continue;
+        }
+        edges.add(new TEdge(p, neighbour));
+        neighbour.checkedPoints.add(p);
+        p.checkedPoints.add(neighbour);
+      }
+    }
+  }
+
+  /*
+  * Collect connected points for each point
+  * !!! Very ineffective, must be optimized in future !!!
+  */
+  private void updateNeighbourPoints() {
+    for (TPoint p : points) {
       for (Triangle t : triangles) {
         if (t.contains(p)) {
           ArrayList<TPoint> neighbours = t.getNeighbours(p);
           for (TPoint neighbour : neighbours) {
-            // System.out.printf("\t[%3d]", points.indexOf(neighbour));
             p.addConnectedPoint(neighbour);
           }
-          // } else {
-          // print("\t------------");
         }
-        // println();
-        //System.out.printf("[%3d]:", points.indexOf(p));
       }
     }
-
-    //debug();
   }
 
   private void createSuperTriangle() {
@@ -186,14 +200,19 @@ public class Triangulator {
   public void debug() {
     System.out.println();
     System.out.printf("points.size()    = %-3d\n", points.size());
-    System.out.printf("edgeBuffer.size()= %-3d\n", edgeBuffer.size());
+    System.out.printf("edges.size()    = %-3d\n", edges.size());
     System.out.printf("triangles.size() = %-3d\n", triangles.size());
     System.out.println();
 
+    println("--TRIANGLES-------------------------------------------------------------------------------");
     for (Triangle t : triangles) {
       System.out.printf("[%3d]: [%3d][%3d][%3d]\n", triangles.indexOf(t), points.indexOf(t.p1), points.indexOf(t.p2), points.indexOf(t.p3));
     } 
-    println("-------------------------------------------------------------------------------------");
+    println("--EDGES-----------------------------------------------------------------------------------");
+    for (TEdge edge : edges) {
+      System.out.printf("[%3d]: [%3d][%3d]\n", edges.indexOf(edge), points.indexOf(edge.p1), points.indexOf(edge.p2));
+    }
+    println("--POINTS----------------------------------------------------------------------------------");
     for (TPoint p : points) {
       System.out.printf("[%3d]: ", points.indexOf(p));
       for (TPoint connectedPoint : p.getConnectedPoints()) {
