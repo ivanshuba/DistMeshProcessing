@@ -38,4 +38,12 @@ public class TPoint extends PVector {
   public ArrayList<TPoint> getConnectedPoints() {
     return connectedPoints;
   }
+
+  public PVector asPVector() {
+    return new PVector(x, y);
+  }
+
+  float distanceTo(PVector p) {
+    return PVector.dist(this.asPVector(), p);
+  }
 }

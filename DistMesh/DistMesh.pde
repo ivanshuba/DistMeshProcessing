@@ -24,7 +24,7 @@ void setup() {
   textFont(createFont("courier", 128));
 
   zoomer = new ZoomPan(this);  // Initialise the zoomer.
-  //zoomer.setMouseMask(SHIFT);  // Only zoom if the shift key is down.
+  zoomer.setMouseMask(SHIFT);  // Only zoom if the shift key is down.
 
   points = new ArrayList<TPoint>();
   //spiralSeed(points);
@@ -112,7 +112,9 @@ void drawTriangles(){
         int cpindex = triangulator.points.indexOf(cp);
         sb.append(cpindex + ",");
       }
-      point(p.x, p.y);
+      //point(p.x, p.y);
+      fill(250);
+      ellipse(p.x, p.y, 5, 5);
       //sb.deleteCharAt(sb.length() - 1);
       int index = triangulator.points.indexOf(p);
       if (drawText) {
@@ -135,7 +137,7 @@ void drawTriangles(){
 
 void mousePressed() {
   if (mouseButton == RIGHT) {
-    if (millis() - delay > 100) {
+    if (millis() - delay > 200) {
       points.add(new TPoint(mousePos.x, mousePos.y));
       triangulator.triangulate(points);
       delay = millis();
