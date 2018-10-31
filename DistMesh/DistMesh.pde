@@ -17,6 +17,7 @@ boolean drawPoints = true;
 boolean drawComplete = false;
 boolean drawText = true;
 double delay = millis();
+float textHeight = 6;
 
 void setup() {
   size(600, 600);
@@ -28,7 +29,7 @@ void setup() {
 
   points = new ArrayList<TPoint>();
   //spiralSeed(points);
-  randomSeed(points, 5);
+  randomSeed(points, 7);
 
   triangulator = new Triangulator();
   triangulator.triangulate(points);
@@ -90,7 +91,7 @@ void drawTriangles(){
       float y = (triangle.p1.y + triangle.p2.y + triangle.p3.y) / 3;
       if (drawText) {
         textAlign(CENTER, CENTER);
-        textSize(12);
+        textSize(textHeight);
         fill(0);
         text(
           triangulator.triangles.indexOf(triangle) + ":" + 
@@ -119,12 +120,27 @@ void drawTriangles(){
       int index = triangulator.points.indexOf(p);
       if (drawText) {
         textAlign(CENTER, CENTER);
-        textSize(12);
+        textSize(textHeight);
         fill(0);
-        text(index + ":(" + sb.toString() + ")", p.x + 5, p.y + 5);
+        text(index + ":(" + sb.toString() + ")", p.x, p.y);
       }
       popStyle();
     }
+  }
+  // draw edges
+  for (TEdge edge : triangulator.edges) {
+    pushStyle();
+    if (drawText) {
+      String edgeIndex = str(triangulator.edges.indexOf(edge));
+      String p1Index = str(triangulator.points.indexOf(edge.p1));
+      String p2Index = str(triangulator.points.indexOf(edge.p2));
+      String info = edgeIndex + ":(" + p1Index + "," + p2Index + ")";
+      textAlign(CENTER, CENTER);
+      textSize(textHeight);
+      fill(100, 100, 200);
+      text(info, (edge.p1.x + edge.p2.x) * 0.5f + 5, (edge.p1.y + edge.p2.y) * 0.5f  + 5);
+    }
+    popStyle();
   }
 
   // pushStyle();
