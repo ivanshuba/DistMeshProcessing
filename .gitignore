@@ -3,9 +3,9 @@
 **/*.class
 
 # All files in '.vscode' folder
-.vscode/
-**/.vscode/
-**/.vscode/*
+#.vscode/
+#**/.vscode/
+#**/.vscode/*
 
 # All files in 'out' folder
 out/
