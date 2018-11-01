@@ -29,7 +29,7 @@ void setup() {
 
   points = new ArrayList<TPoint>();
   //spiralSeed(points);
-  randomSeed(points, 7);
+  randomSeed(points, 127);
 
   triangulator = new Triangulator();
   triangulator.triangulate(points);
@@ -76,34 +76,20 @@ void drawDebugInfo() {
   textSize(10);
   text("points.size():" + triangulator.points.size(), 10, 10);
   text("triangles.size():" + triangulator.triangles.size(), 10, 20);
+  textSize(16);
+  text(frameRate, 10, 40);
 }
 
 void drawTriangles(){
-  if(drawTriangles) {
-    pushMatrix();
-    for (Triangle triangle : triangulator.triangles) {
+  // draw edges
+  pushMatrix();
+  for (TEdge edge : triangulator.edges) {
       pushStyle();
       strokeWeight(0.5f);
-      line(triangle.p1.x, triangle.p1.y, triangle.p2.x, triangle.p2.y);
-      line(triangle.p2.x, triangle.p2.y, triangle.p3.x, triangle.p3.y);
-      line(triangle.p3.x, triangle.p3.y, triangle.p1.x, triangle.p1.y);
-      float x = (triangle.p1.x + triangle.p2.x + triangle.p3.x) / 3;
-      float y = (triangle.p1.y + triangle.p2.y + triangle.p3.y) / 3;
-      if (drawText) {
-        textAlign(CENTER, CENTER);
-        textSize(textHeight);
-        fill(0);
-        text(
-          triangulator.triangles.indexOf(triangle) + ":" + 
-          triangulator.points.indexOf(triangle.p1) + "," + 
-          triangulator.points.indexOf(triangle.p2) + "," + 
-          triangulator.points.indexOf(triangle.p3)  
-          , x, y);
-      }
+      line(edge.p1.x, edge.p1.y, edge.p2.x, edge.p2.y);
       popStyle();
-    }
-    popMatrix();
   }
+  popMatrix();
 
   if (drawPoints) {
     for (TPoint p : triangulator.points) {
