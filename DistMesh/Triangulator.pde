@@ -18,9 +18,9 @@
  *
  */
 public class Triangulator {
+  public ArrayList<TEdge>    edges;
   public ArrayList<TPoint>   points;
   public ArrayList<Triangle> triangles;
-  public ArrayList<TEdge>    edges;
   public Triangle            superTriangle;
 
   public Triangulator() {
@@ -124,6 +124,23 @@ public class Triangulator {
     //debug();
   }
 
+  /*
+   * Collect connected points for each point
+   * !!! Very ineffective, must be optimized in future !!!
+   */
+  private void updateNeighbourPoints() {
+    for (TPoint p : points) {
+      for (Triangle t : triangles) {
+        if (t.contains(p)) {
+          ArrayList<TPoint> neighbours = t.getNeighbours(p);
+          for (TPoint neighbour : neighbours) {
+            p.addConnectedPoint(neighbour);
+          }
+        }
+      }
+    }
+  }
+
   private void updateEdgeList() {
     for (TPoint p : points) {
       for (TPoint neighbour : p.getConnectedPoints()) {
@@ -135,22 +152,8 @@ public class Triangulator {
         p.checkedPoints.add(neighbour);
       }
     }
-  }
-
-  /*
-  * Collect connected points for each point
-  * !!! Very ineffective, must be optimized in future !!!
-  */
-  private void updateNeighbourPoints() {
     for (TPoint p : points) {
-      for (Triangle t : triangles) {
-        if (t.contains(p)) {
-          ArrayList<TPoint> neighbours = t.getNeighbours(p);
-          for (TPoint neighbour : neighbours) {
-            p.addConnectedPoint(neighbour);
-          }
-        }
-      }
+      p.checkedPoints.clear();
     }
   }
 

@@ -17,7 +17,7 @@ boolean drawPoints = true;
 boolean drawComplete = false;
 boolean drawText = true;
 double delay = millis();
-float textHeight = 6;
+float textHeight = 8;
 
 void setup() {
   size(600, 600);
@@ -26,14 +26,26 @@ void setup() {
 
   zoomer = new ZoomPan(this);  // Initialise the zoomer.
   zoomer.setMouseMask(SHIFT);  // Only zoom if the shift key is down.
+  zoomer.setZoomMouseButton(LEFT);
 
   points = new ArrayList<TPoint>();
   //spiralSeed(points);
-  randomSeed(points, 127);
+  randomSeed(points, 4);
 
   triangulator = new Triangulator();
   triangulator.triangulate(points);
   triangulator.debug();
+}
+
+void draw() {
+  background(230);
+  pushMatrix();                          // Store a copy of the unzoomed screen transformation.
+  zoomer.transform();                    // Enable the zooming/panning.
+  mousePos = zoomer.getMouseCoord();
+  drawTriangles();
+  popMatrix();                           // Restore the unzoomed screen transformation.
+  surface.setTitle(mousePos.x + ":" + mousePos.y);
+  drawDebugInfo();
 }
 
 void randomSeed(ArrayList<TPoint> points, int npoints) {
@@ -60,17 +72,6 @@ void spiralSeed(ArrayList<TPoint> points) {
   }
 }
 
-void draw() {
-  background(230);
-  pushMatrix();                          // Store a copy of the unzoomed screen transformation.
-  zoomer.transform();                    // Enable the zooming/panning.
-  mousePos = zoomer.getMouseCoord();
-  drawTriangles();
-  popMatrix();                           // Restore the unzoomed screen transformation.
-  surface.setTitle(mousePos.x + ":" + mousePos.y);
-  drawDebugInfo();
-}
-
 void drawDebugInfo() {
   fill(0);
   textSize(10);
@@ -82,14 +83,41 @@ void drawDebugInfo() {
 
 void drawTriangles(){
   // draw edges
-  pushMatrix();
-  for (TEdge edge : triangulator.edges) {
+  // pushMatrix();
+  // for (TEdge edge : triangulator.edges) {
+  //     pushStyle();
+  //     strokeWeight(0.5f);
+  //     line(edge.p1.x, edge.p1.y, edge.p2.x, edge.p2.y);
+  //     popStyle();
+  // }
+  // popMatrix();
+
+  if(drawTriangles) {
+    pushMatrix();
+    for (Triangle triangle : triangulator.triangles) {
       pushStyle();
       strokeWeight(0.5f);
-      line(edge.p1.x, edge.p1.y, edge.p2.x, edge.p2.y);
+      line(triangle.p1.x, triangle.p1.y, triangle.p2.x, triangle.p2.y);
+      line(triangle.p2.x, triangle.p2.y, triangle.p3.x, triangle.p3.y);
+      line(triangle.p3.x, triangle.p3.y, triangle.p1.x, triangle.p1.y);
+      float x = (triangle.p1.x + triangle.p2.x + triangle.p3.x) / 3;
+      float y = (triangle.p1.y + triangle.p2.y + triangle.p3.y) / 3;
+      if (drawText) {
+        textAlign(CENTER, CENTER);
+        textSize(textHeight);
+        fill(0);
+        text(
+          triangulator.triangles.indexOf(triangle) + ":" +
+          triangulator.points.indexOf(triangle.p1) + "," +
+          triangulator.points.indexOf(triangle.p2) + "," +
+          triangulator.points.indexOf(triangle.p3)
+          , x, y);
+      }
       popStyle();
+    }
+    popMatrix();
   }
-  popMatrix();
+
 
   if (drawPoints) {
     for (TPoint p : triangulator.points) {
@@ -105,10 +133,10 @@ void drawTriangles(){
       //sb.deleteCharAt(sb.length() - 1);
       int index = triangulator.points.indexOf(p);
       if (drawText) {
-        textAlign(CENTER, CENTER);
+        textAlign(LEFT, CENTER);
         textSize(textHeight);
         fill(0);
-        text(index + ":(" + sb.toString() + ")", p.x, p.y);
+        text(index + ":(" + sb.toString() + ")", p.x, p.y - 10);
       }
       popStyle();
     }
@@ -142,6 +170,7 @@ void mousePressed() {
     if (millis() - delay > 200) {
       points.add(new TPoint(mousePos.x, mousePos.y));
       triangulator.triangulate(points);
+      triangulator.debug();
       delay = millis();
     }
   }
