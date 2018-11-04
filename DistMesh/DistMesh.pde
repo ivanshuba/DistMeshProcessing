@@ -13,9 +13,9 @@ ZoomPan zoomer;    // This should be declared outside any methods.
 PVector mousePos;  // Stores the mouse position.
 
 boolean drawTriangles = false;
-boolean drawEdges = true;
-boolean drawPoints = true;
-boolean drawText = true;
+boolean drawPoints = false;
+boolean drawEdges = false;
+boolean drawText = false;
 double delay = millis();
 float textHeight = 8;
 
@@ -42,7 +42,7 @@ void draw() {
   pushMatrix();                          // Store a copy of the unzoomed screen transformation.
   zoomer.transform();                    // Enable the zooming/panning.
   mousePos = zoomer.getMouseCoord();
-  drawTriangles();
+  drawTriangulation();
   popMatrix();                           // Restore the unzoomed screen transformation.
   surface.setTitle(mousePos.x + ":" + mousePos.y);
   drawDebugInfo();
@@ -81,7 +81,7 @@ void drawDebugInfo() {
   text(frameRate, 10, 40);
 }
 
-void drawTriangles(){
+void drawTriangulation(){
   // draw edges
   if (drawEdges) {
     pushMatrix();
@@ -173,13 +173,11 @@ void mousePressed() {
 }
 
 void keyPressed() {
-  if (key == '1') {
-    drawComplete = !drawComplete;
-    println("drawComplete:" + drawComplete);
+  if (key == 'e') {
+    drawEdges = !drawEdges;
   }
-  if (key == '2') {
+  if (key == 'r') {
     drawTriangles = !drawTriangles;
-    println("drawTriangles:" + drawTriangles);
   }
   if (key == 'd') {
     triangulator.debug();
@@ -191,3 +189,4 @@ void keyPressed() {
     drawPoints = !drawPoints;
   }
 }
+

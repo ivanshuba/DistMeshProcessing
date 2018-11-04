@@ -142,6 +142,7 @@ public class Triangulator {
   }
 
   private void updateEdgeList() {
+    edges.clear();
     for (TPoint p : points) {
       for (TPoint neighbour : p.getConnectedPoints()) {
         if (neighbour.checkedPoints.contains(p) || p.checkedPoints.contains(neighbour)) {
@@ -155,6 +156,7 @@ public class Triangulator {
     for (TPoint p : points) {
       p.connectedPoints.clear();
       p.checkedPoints.clear();
+      p.connectedPoints.clear();
     }
   }
 
