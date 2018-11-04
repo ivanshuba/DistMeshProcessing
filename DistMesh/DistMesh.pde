@@ -12,10 +12,10 @@ ArrayList<TPoint> points;
 ZoomPan zoomer;    // This should be declared outside any methods.
 PVector mousePos;  // Stores the mouse position.
 
-boolean drawTriangles = false;
-boolean drawPoints = false;
-boolean drawEdges = false;
-boolean drawText = false;
+boolean drawTriangles = true;
+boolean drawPoints = true;
+boolean drawEdges = true;
+boolean drawText = true;
 double delay = millis();
 float textHeight = 8;
 
@@ -88,6 +88,7 @@ void drawTriangulation(){
     for (TEdge edge : triangulator.edges) {
         pushStyle();
         strokeWeight(0.5f);
+        stroke(50, 150, 50);
         line(edge.p1.x, edge.p1.y, edge.p2.x, edge.p2.y);
         if (drawText) {
           String edgeIndex = str(triangulator.edges.indexOf(edge));
@@ -138,10 +139,12 @@ void drawTriangulation(){
         int cpindex = triangulator.points.indexOf(cp);
         sb.append(cpindex + ",");
       }
-      //point(p.x, p.y);
+      if (p.connectedPoints.size() > 0) {
+        sb.deleteCharAt(sb.length() - 1);
+      }
       fill(250);
+      //point(p.x, p.y);
       ellipse(p.x, p.y, 5, 5);
-      //sb.deleteCharAt(sb.length() - 1);
       int index = triangulator.points.indexOf(p);
       if (drawText) {
         textAlign(LEFT, CENTER);
@@ -152,13 +155,6 @@ void drawTriangulation(){
       popStyle();
     }
   }
-  // draw SuperTriangle
-  // pushStyle();
-  // line(triangulator.superTriangle.p1.x, triangulator.superTriangle.p1.y, triangulator.superTriangle.p2.x, triangulator.superTriangle.p2.y);    
-  // line(triangulator.superTriangle.p2.x, triangulator.superTriangle.p2.y, triangulator.superTriangle.p3.x, triangulator.superTriangle.p3.y);    
-  // line(triangulator.superTriangle.p3.x, triangulator.superTriangle.p3.y, triangulator.superTriangle.p1.x, triangulator.superTriangle.p1.y);    
-  // popStyle();
-
 }
 
 void mousePressed() {

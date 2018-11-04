@@ -109,9 +109,7 @@ public class Triangulator {
       }
     }
 
-    /*
-      Remove triangles with supertriangle vertices
-     */
+    // Remove triangles with supertriangle vertices
     for (int i = triangles.size() - 1; i >= 0; i--) {
       Triangle t = (Triangle) triangles.get(i);
       if (t.sharesVertex(superTriangle)) {
@@ -119,22 +117,30 @@ public class Triangulator {
       }
     }
 
-    updateNeighbourPoints();
-    updateEdgeList();
+    clearConnectedPoints();
+    updateConnectedPoints();
+    //updateEdgeList();
     //debug();
+  }
+
+  private void clearConnectedPoints() {
+    for (TPoint p : points) {
+      p.connectedPoints.clear();
+      p.checkedPoints.clear();
+    }
   }
 
   /*
    * Collect connected points for each point
    * !!! Very ineffective, must be optimized in future !!!
    */
-  private void updateNeighbourPoints() {
-    for (TPoint p : points) {
-      for (Triangle t : triangles) {
-        if (t.contains(p)) {
-          ArrayList<TPoint> neighbours = t.getNeighbours(p);
+  private void updateConnectedPoints() {
+    for (TPoint point : points) {
+      for (Triangle triangle : triangles) {
+        if (triangle.contains(point)) {
+          ArrayList<TPoint> neighbours = triangle.getNeighbours(point);
           for (TPoint neighbour : neighbours) {
-            p.addConnectedPoint(neighbour);
+            point.addConnectedPoint(neighbour);
           }
         }
       }
@@ -152,11 +158,6 @@ public class Triangulator {
         neighbour.checkedPoints.add(p);
         p.checkedPoints.add(neighbour);
       }
-    }
-    for (TPoint p : points) {
-      p.connectedPoints.clear();
-      p.checkedPoints.clear();
-      p.connectedPoints.clear();
     }
   }
 
