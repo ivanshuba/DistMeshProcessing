@@ -6,7 +6,7 @@ import java.util.Iterator;
 import processing.core.PApplet;
 import org.gicentre.utils.move.*;    // For the zoomer.
 
-Triangulator triangulator;
+Delaunay triangulation;
 ArrayList<TPoint> points;
 
 ZoomPan zoomer;    // This should be declared outside any methods.
@@ -32,9 +32,9 @@ void setup() {
   //spiralSeed(points);
   randomSeed(points, 4);
 
-  triangulator = new Triangulator();
-  triangulator.triangulate(points);
-  triangulator.debug();
+  triangulation = new Delaunay();
+  triangulation.triangulate(points);
+  triangulation.debug();
 }
 
 void draw() {
@@ -44,6 +44,9 @@ void draw() {
   mousePos = zoomer.getMouseCoord();
   drawTriangulation();
   popMatrix();                           // Restore the unzoomed screen transformation.
+
+  // DistMeshOptimizer.optimize(triangulation);
+
   surface.setTitle(mousePos.x + ":" + mousePos.y);
   drawDebugInfo();
 }
@@ -75,8 +78,8 @@ void spiralSeed(ArrayList<TPoint> points) {
 void drawDebugInfo() {
   fill(0);
   textSize(10);
-  text("points.size():" + triangulator.points.size(), 10, 10);
-  text("triangles.size():" + triangulator.triangles.size(), 10, 20);
+  text("points.size():" + triangulation.points.size(), 10, 10);
+  text("triangles.size():" + triangulation.triangles.size(), 10, 20);
   textSize(16);
   text(frameRate, 10, 40);
 }
@@ -85,15 +88,15 @@ void drawTriangulation(){
   // draw edges
   if (drawEdges) {
     pushMatrix();
-    for (TEdge edge : triangulator.edges) {
+    for (TEdge edge : triangulation.edges) {
         pushStyle();
         strokeWeight(0.5f);
         stroke(50, 100, 50);
         line(edge.p1.x, edge.p1.y, edge.p2.x, edge.p2.y);
         if (drawText) {
-          String edgeIndex = str(triangulator.edges.indexOf(edge));
-          String p1Index = str(triangulator.points.indexOf(edge.p1));
-          String p2Index = str(triangulator.points.indexOf(edge.p2));
+          String edgeIndex = str(triangulation.edges.indexOf(edge));
+          String p1Index = str(triangulation.points.indexOf(edge.p1));
+          String p2Index = str(triangulation.points.indexOf(edge.p2));
           String info = edgeIndex + ":(" + p1Index + "," + p2Index + ")";
           textAlign(CENTER, CENTER);
           textSize(textHeight);
@@ -107,7 +110,7 @@ void drawTriangulation(){
   // draw triangles
   if (drawTriangles) {
     pushMatrix();
-    for (Triangle triangle : triangulator.triangles) {
+    for (Triangle triangle : triangulation.triangles) {
       pushStyle();
       strokeWeight(0.5f);
       line(triangle.p1.x, triangle.p1.y, triangle.p2.x, triangle.p2.y);
@@ -120,10 +123,10 @@ void drawTriangulation(){
         textSize(textHeight);
         fill(0);
         text(
-          triangulator.triangles.indexOf(triangle) + ":" +
-          triangulator.points.indexOf(triangle.p1) + "," +
-          triangulator.points.indexOf(triangle.p2) + "," +
-          triangulator.points.indexOf(triangle.p3)
+          triangulation.triangles.indexOf(triangle) + ":" +
+          triangulation.points.indexOf(triangle.p1) + "," +
+          triangulation.points.indexOf(triangle.p2) + "," +
+          triangulation.points.indexOf(triangle.p3)
           , x, y);
       }
       popStyle();
@@ -132,11 +135,11 @@ void drawTriangulation(){
   }
   // draw points
   if (drawPoints) {
-    for (TPoint p : triangulator.points) {
+    for (TPoint p : triangulation.points) {
       pushStyle();
       StringBuilder sb = new StringBuilder();
       for (TPoint cp : p.connectedPoints) {
-        int cpindex = triangulator.points.indexOf(cp);
+        int cpindex = triangulation.points.indexOf(cp);
         sb.append(cpindex + ",");
       }
       if (p.connectedPoints.size() > 0) {
@@ -145,7 +148,7 @@ void drawTriangulation(){
       fill(250);
       //point(p.x, p.y);
       ellipse(p.x, p.y, 5, 5);
-      int index = triangulator.points.indexOf(p);
+      int index = triangulation.points.indexOf(p);
       if (drawText) {
         textAlign(LEFT, CENTER);
         textSize(textHeight);
@@ -161,8 +164,8 @@ void mousePressed() {
   if (mouseButton == RIGHT) {
     if (millis() - delay > 200) {
       points.add(new TPoint(mousePos.x, mousePos.y));
-      triangulator.triangulate(points);
-      triangulator.debug();
+      triangulation.triangulate(points);
+      triangulation.debug();
       delay = millis();
     }
   }
@@ -176,7 +179,7 @@ void keyPressed() {
     drawTriangles = !drawTriangles;
   }
   if (key == 'd') {
-    triangulator.debug();
+    triangulation.debug();
   }
   if (key == 't') {
     drawText = !drawText;

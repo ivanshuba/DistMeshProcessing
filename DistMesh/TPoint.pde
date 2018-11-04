@@ -8,14 +8,12 @@ public class TPoint extends PVector {
   PVector position;
   PVector velocity;
   PVector acceleration;
-  // This length must be changed depending on `weight` of each word-node (extend TPoint)
-  float prefferableLength = 20f;
+
   // Artificial mass (change to increase convergence)
   float mass = 10f;
   // Artificial damping (change to increase convergence)
   float damping = 0.8f;
-  // Artificial stiffness (change to increase convergence)
-  float k = 0.997f;
+
 
   public TPoint() {
     connectedPoints = new ArrayList<TPoint>(0);
@@ -63,18 +61,28 @@ public class TPoint extends PVector {
     return PVector.dist(this.asPVector(), p);
   }
 
+  // presumably support accumulation of several forces
   public void applyForce(PVector force) {
-
+    PVector f = force.get();
+    f.div(mass);
+    acceleration.add(f);
   }
 
-  PVector calculateForceFrom(TPoint neighbour) {
-    PVector vectorDist = PVector.sub(position, neighbour.position);
-    float floatDist = vectorDist.mag();
-    float stretch = floatDist - prefferableLength;
-    vectorDist.normalize();
-    PVector force = vectorDist.mult(-1f * k * stretch);
-    return new PVector(0.0, 0.0);
+  public void updatePosition() {
+    velocity.add(acceleration);
+    velocity.mult(damping);
+    position.add(velocity);
+    acceleration.mult(0);
   }
+
+  // PVector calculateForceFrom(TPoint neighbour) {
+  //   PVector vectorDist = PVector.sub(position, neighbour.position);
+  //   float floatDist = vectorDist.mag();
+  //   float stretch = floatDist - prefferableLength;
+  //   vectorDist.normalize();
+  //   PVector force = vectorDist.mult(-1f * k * stretch);
+  //   return new PVector(0.0, 0.0);
+  // }
 
   public String toString() {
     return "[" + x + ":" + y + "]";

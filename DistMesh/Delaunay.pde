@@ -17,13 +17,13 @@
  *      antiplastik, 28 june 2010, paris-france
  *
  */
-public class Triangulator {   
+public class Delaunay {   
   public ArrayList<TEdge>    edges;
   public ArrayList<TPoint>   points;
   public ArrayList<Triangle> triangles;
   public Triangle            superTriangle;
 
-  public Triangulator() {
+  public Delaunay() {
   }
 
   /*
