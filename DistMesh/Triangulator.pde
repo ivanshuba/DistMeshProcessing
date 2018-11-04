@@ -119,7 +119,7 @@ public class Triangulator {
 
     clearConnectedPoints();
     updateConnectedPoints();
-    //updateEdgeList();
+    updateEdgeList();
     //debug();
   }
 

@@ -12,7 +12,7 @@ ArrayList<TPoint> points;
 ZoomPan zoomer;    // This should be declared outside any methods.
 PVector mousePos;  // Stores the mouse position.
 
-boolean drawTriangles = true;
+boolean drawTriangles = false;
 boolean drawPoints = true;
 boolean drawEdges = true;
 boolean drawText = true;
@@ -88,7 +88,7 @@ void drawTriangulation(){
     for (TEdge edge : triangulator.edges) {
         pushStyle();
         strokeWeight(0.5f);
-        stroke(50, 150, 50);
+        stroke(50, 100, 50);
         line(edge.p1.x, edge.p1.y, edge.p2.x, edge.p2.y);
         if (drawText) {
           String edgeIndex = str(triangulator.edges.indexOf(edge));
