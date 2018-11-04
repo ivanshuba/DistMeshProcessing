@@ -50,4 +50,40 @@ public class Triangle {
     return neighbours;
   }
 
+	//public PVector getCenterPoint(PVector sp, PVector ep, PVector mp) {
+	public PVector getCenterPoint() {
+ 		PVector ar, aa, bb;
+    PVector sp = p1.asPVector();
+    PVector mp = p2.asPVector();
+    PVector ep = p3.asPVector();
+
+		aa = PVector.sub(mp, sp);
+		bb = PVector.sub(ep, sp);
+		float bb2 = bb.mag() * bb.mag();
+		float aa2 = aa.mag() * aa.mag();
+
+		ar = PVector.div(
+  		    PVector.add(
+	          PVector.mult(aa, bb2 * (aa2 - aa.dot(bb))), 
+            PVector.mult(bb, aa2 * (bb2 - aa.dot(bb)))
+            ), 
+          ((aa.cross(bb)).mag() * (aa.cross(bb)).mag()) * 2);
+
+    PVector center;          
+		if (PApplet.abs(sp.x - ep.x) < PApplet.EPSILON) {
+			center = new PVector(sp.x + ar.x, (sp.y + ep.y) * 0.5f);
+		} else if (PApplet.abs(sp.y - ep.y) < PApplet.EPSILON) {
+			center = new PVector((sp.x + ep.x) * 0.5f, sp.y + ar.y);
+		} else {
+			center = new PVector(sp.x + ar.x, sp.y + ar.y);
+		}
+    return center;
+	}
+
+  public boolean isPointInsideCircumCircle(TPoint p) {
+    PVector center = getCenterPoint();
+    float r = p.distanceTo(p1.asPVector());
+    float d = p.distanceTo(center);
+    return (d < r ? true : false);
+  }
 }

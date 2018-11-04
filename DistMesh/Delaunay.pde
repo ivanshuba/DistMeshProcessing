@@ -17,68 +17,35 @@
  *      antiplastik, 28 june 2010, paris-france
  *
  */
-public class Triangulator {
+public class Delaunay {   
+  public ArrayList<TEdge>    edges;
   public ArrayList<TPoint>   points;
   public ArrayList<Triangle> triangles;
-  public ArrayList<TEdge>    edgeBuffer;
   public Triangle            superTriangle;
 
-  public Triangulator() {
+  public Delaunay() {
+  }
+
+  public void update() {
+    triangulate(points);
   }
 
   /*
     Triangulation subroutine.
-    Takes the ArrayList of vertices (TPoints) as an input.
-    Returns an ArrayList of triangles.
-    These triangles are arranged in a consistent clockwise order.
-  */
+   Takes the ArrayList of vertices (TPoints) as an input.
+   Returns an ArrayList of triangles.
+   These triangles are arranged in a consistent clockwise order.
+   */
   public void triangulate(ArrayList<TPoint> points) {
     this.points = points;
+    // Initialize ArrayList for Edges to be returned
+    edges = new ArrayList<TEdge>();
     // Initialize ArrayList for Triangles to be returned
     triangles = new ArrayList<Triangle>(); 
     // Initialize HashSet for "complete" Triangle set 
     HashSet<Triangle> complete = new HashSet<Triangle>(); 
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////// 
-    //
-    // Start creating the SuperTriangle
-    // This is a triangle which encompasses all the sample points.
-    // The supertriangle coordinates are added to the end of the
-    // vertex list. The supertriangle is the first triangle in
-    // the triangle list.
-    //
-    // 1. Sort points arraylist in increasing x values
-    Collections.sort(points, new XComparator());
-    // 2. Start finding the maximum and minimum X and Y coordinates from the list of all the points
-    float xmin = ((TPoint) points.get(0)).x;
-    float ymin = ((TPoint) points.get(0)).y;
-    float xmax = xmin;
-    float ymax = ymin;
-    for (TPoint p : points) {
-      if (p.x < xmin) xmin = p.x;
-      if (p.x > xmax) xmax = p.x;
-      if (p.y < ymin) ymin = p.y;
-      if (p.y > ymax) ymax = p.y;
-    } 
-    // 3. calculate width and height of the bounding rectangle for the whole bunch of points 
-    float dx = xmax - xmin;
-    float dy = ymax - ymin;
-    // 4. Find out what is larger - width or height of the boundary rectangle
-    float dmax = (dx > dy) ? dx : dy;
-    // 5. Find the center of the boundary rectangle
-    float xmid = (xmax + xmin) * 0.5f;
-    float ymid = (ymax + ymin) * 0.5f;
-    // 6. Set up the SuperTriangle ...
-    superTriangle = new Triangle();
-    superTriangle.p1 = new TPoint(xmid - 2.0f * dmax, ymid - dmax, 0.0f);
-    superTriangle.p2 = new TPoint(xmid, ymid + 2.0f * dmax, 0.0f);
-    superTriangle.p3 = new TPoint(xmid + 2.0f * dmax, ymid - dmax, 0.0f);
-    // 7. ... and add it to the Triangles ArrayList
-    triangles.add(superTriangle);
-    //
-    // Stop creating the SuperTriangle
-    //
-    ///////////////////////////////////////////////////////////////////////////////////////////////// 
+    createSuperTriangle();
 
     ///////////////////////////////////////////////////////////////////////////////////////////////// 
     //
@@ -86,7 +53,7 @@ public class Triangulator {
     // caluations)
     //
     // 1. Set up the edge buffer.
-    edgeBuffer = new ArrayList<TEdge>();
+    ArrayList<TEdge> edgeBuffer = new ArrayList<TEdge>();
     // 2. Iterate through all the points in ArrayList. Process each point one at a time.
     for (TPoint p : points) {
       TPoint circle = new TPoint();
@@ -146,9 +113,7 @@ public class Triangulator {
       }
     }
 
-    /*
-      Remove triangles with supertriangle vertices
-    */
+    // Remove triangles with supertriangle vertices
     for (int i = triangles.size() - 1; i >= 0; i--) {
       Triangle t = (Triangle) triangles.get(i);
       if (t.sharesVertex(superTriangle)) {
@@ -156,41 +121,109 @@ public class Triangulator {
       }
     }
 
-    /*
-     * Collect connected points for each point
-     */
-    for (TPoint p : points) {
-      // System.out.printf("[%3d]: \n", points.indexOf(p));
-      for (Triangle t : triangles) {
-        if (t.contains(p)) {
-          ArrayList<TPoint> neighbours = t.getNeighbours(p);
-          for (TPoint neighbour : neighbours) {
-            // System.out.printf("\t[%3d]", points.indexOf(neighbour));
-            p.addConnectedPoint(neighbour);
-          }
-        // } else {
-            // print("\t------------");
-        }
-        // println();
-        //System.out.printf("[%3d]:", points.indexOf(p));
-      } 
-    }
-
+    clearConnectedPoints();
+    updateConnectedPoints();
+    updateEdgeList();
     //debug();
+  }
 
+  private void clearConnectedPoints() {
+    for (TPoint p : points) {
+      p.connectedPoints.clear();
+      p.checkedPoints.clear();
+    }
+  }
+
+  /*
+   * Collect connected points for each point
+   * !!! Very ineffective, must be optimized in future !!!
+   */
+  private void updateConnectedPoints() {
+    for (TPoint point : points) {
+      for (Triangle triangle : triangles) {
+        if (triangle.contains(point)) {
+          ArrayList<TPoint> neighbours = triangle.getNeighbours(point);
+          for (TPoint neighbour : neighbours) {
+            point.addConnectedPoint(neighbour);
+          }
+        }
+      }
+    }
+  }
+
+  private void updateEdgeList() {
+    edges.clear();
+    for (TPoint p : points) {
+      for (TPoint neighbour : p.getConnectedPoints()) {
+        if (neighbour.checkedPoints.contains(p) || p.checkedPoints.contains(neighbour)) {
+          continue;
+        }
+        edges.add(new TEdge(p, neighbour));
+        neighbour.checkedPoints.add(p);
+        p.checkedPoints.add(neighbour);
+      }
+    }
+  }
+
+  private void createSuperTriangle() {
+    ///////////////////////////////////////////////////////////////////////////////////////////////// 
+    //
+    // Start creating the SuperTriangle
+    // This is a triangle which encompasses all the sample points.
+    // The supertriangle coordinates are added to the end of the
+    // vertex list. The supertriangle is the first triangle in
+    // the triangle list.
+    //
+    // 1. Sort points arraylist in increasing x values
+    Collections.sort(points, new XComparator());
+    // 2. Start finding the maximum and minimum X and Y coordinates from the list of all the points
+    float xmin = ((TPoint) points.get(0)).x;
+    float ymin = ((TPoint) points.get(0)).y;
+    float xmax = xmin;
+    float ymax = ymin;
+    for (TPoint p : points) {
+      if (p.x < xmin) xmin = p.x;
+      if (p.x > xmax) xmax = p.x;
+      if (p.y < ymin) ymin = p.y;
+      if (p.y > ymax) ymax = p.y;
+    } 
+    // 3. calculate width and height of the bounding rectangle for the whole bunch of points 
+    float dx = xmax - xmin;
+    float dy = ymax - ymin;
+    // 4. Find out what is larger - width or height of the boundary rectangle
+    float dmax = (dx > dy) ? dx : dy;
+    // 5. Find the center of the boundary rectangle
+    float xmid = (xmax + xmin) * 0.5f;
+    float ymid = (ymax + ymin) * 0.5f;
+    // 6. Set up the SuperTriangle ...
+    superTriangle = new Triangle();
+    superTriangle.p1 = new TPoint(xmid - 2.0f * dmax, ymid - dmax, 0.0f);
+    superTriangle.p2 = new TPoint(xmid, ymid + 2.0f * dmax, 0.0f);
+    superTriangle.p3 = new TPoint(xmid + 2.0f * dmax, ymid - dmax, 0.0f);
+    // 7. ... and add it to the Triangles ArrayList
+    triangles.add(superTriangle);
+    //
+    // Stop creating the SuperTriangle
+    //
+    /////////////////////////////////////////////////////////////////////////////////////////////////   
   }
 
   public void debug() {
     System.out.println();
     System.out.printf("points.size()    = %-3d\n", points.size());
-    System.out.printf("edgeBuffer.size()= %-3d\n", edgeBuffer.size());
+    System.out.printf("edges.size()    = %-3d\n", edges.size());
     System.out.printf("triangles.size() = %-3d\n", triangles.size());
     System.out.println();
 
+    println("--TRIANGLES-------------------------------------------------------------------------------");
     for (Triangle t : triangles) {
       System.out.printf("[%3d]: [%3d][%3d][%3d]\n", triangles.indexOf(t), points.indexOf(t.p1), points.indexOf(t.p2), points.indexOf(t.p3));
     } 
-    println("-------------------------------------------------------------------------------------");
+    println("--EDGES-----------------------------------------------------------------------------------");
+    for (TEdge edge : edges) {
+      System.out.printf("[%3d]: [%3d][%3d]\n", edges.indexOf(edge), points.indexOf(edge.p1), points.indexOf(edge.p2));
+    }
+    println("--POINTS----------------------------------------------------------------------------------");
     for (TPoint p : points) {
       System.out.printf("[%3d]: ", points.indexOf(p));
       for (TPoint connectedPoint : p.getConnectedPoints()) {
@@ -204,61 +237,57 @@ public class Triangulator {
     public int compare(TPoint p1, TPoint p2) {
       if (p1.x < p2.x) {
         return -1;
-      }
-      else if (p1.x > p2.x) {
+      } else if (p1.x > p2.x) {
         return 1;
-      }
-      else {
+      } else {
         return 0;
       }
     }
   }
 
-/*
+  /*
+   This might be needed later for refactoring.
+   /////////////////////////////////////////////////////////////////////////////////////
+   // Author: Ivan Shuba
+   // This is a modified version, taken from JFrameP.
+   	// Returns absolute position of a center point as PVector.
+   	public PVector getCenterPoint(PVector sp, PVector ep, PVector mp) {
+   		PVector ar, aa, bb;
+   
+   		aa = PVector.sub(mp, sp);
+   		bb = PVector.sub(ep, sp);
+   		float bb2 = bb.mag() * bb.mag();
+   		float aa2 = aa.mag() * aa.mag();
+   
+   		ar = PVector.div(
+   		    PVector.add(
+   	          PVector.mult(aa, bb2 * (aa2 - aa.dot(bb))), 
+   PVector.mult(bb, aa2 * (bb2 - aa.dot(bb)))
+   ), 
+   ((aa.cross(bb)).mag() * (aa.cross(bb)).mag()) * 2);
+   		if (PApplet.abs(sp.x - ep.x) < PApplet.EPSILON) {
+   			return new PVector(sp.x + ar.x, (sp.y + ep.y) * 0.5f);
+   		} else if (PApplet.abs(sp.y - ep.y) < PApplet.EPSILON) {
+   			return new PVector((sp.x + ep.x) * 0.5f, sp.y + ar.y);
+   		} else {
+   			return new PVector(sp.x + ar.x, sp.y + ar.y);
+   		}
+   	}
+   */
 
-  This might be needed later for refactoring.
-
-  /////////////////////////////////////////////////////////////////////////////////////
-  // Author: Ivan Shuba
-  // This is a modified version, taken from JFrameP.
-	// Returns absolute position of a center point as PVector.
-	public PVector getCenterPoint(PVector sp, PVector ep, PVector mp) {
- 		PVector ar, aa, bb;
-
-		aa = PVector.sub(mp, sp);
-		bb = PVector.sub(ep, sp);
-		float bb2 = bb.mag() * bb.mag();
-		float aa2 = aa.mag() * aa.mag();
-
-		ar = PVector.div(
-  		    PVector.add(
-	          PVector.mult(aa, bb2 * (aa2 - aa.dot(bb))), 
-            PVector.mult(bb, aa2 * (bb2 - aa.dot(bb)))
-            ), 
-          ((aa.cross(bb)).mag() * (aa.cross(bb)).mag()) * 2);
-		if (PApplet.abs(sp.x - ep.x) < PApplet.EPSILON) {
-			return new PVector(sp.x + ar.x, (sp.y + ep.y) * 0.5f);
-		} else if (PApplet.abs(sp.y - ep.y) < PApplet.EPSILON) {
-			return new PVector((sp.x + ep.x) * 0.5f, sp.y + ar.y);
-		} else {
-			return new PVector(sp.x + ar.x, sp.y + ar.y);
-		}
-	}
-*/
-
-  /////////////////////////////////////////////////////////////////////////////////////
-  // 
-  // The original version of the circumcircle test.
-  //
-  // Note: Actually, because it was written in C, it is designed such way that it 
-  // "returns" several types of data.
-  // 1. The boolean value is passed directly as a returned value. It is equal true, if
-  //    the point 'p' is INSIDE of the circumscribed circle, more specifically, if the 
-  //    radius of circumscribed circle is greater than distance between the center of
-  //    this circle and the point 'p' that is passed as an argument.
-  // 2. Also, implicitly, the method also "returns" the coordinates of point 'circle'.
-  // 3. Also, implicitly, the radius of the circumscribed circle is "returned" as Z 
-  //    value of the point 'circle'.
+  /*
+    The original version of the circumcircle test.
+   
+    Note: Actually, because it was written in C, it is designed such way that it 
+    "returns" several types of data.
+    1. The boolean value is passed directly as a returned value. It is equal true, if
+       the point 'p' is INSIDE of the circumscribed circle, more specifically, if the 
+       radius of circumscribed circle is greater than distance between the center of
+       this circle and the point 'p' that is passed as an argument.
+    2. Also, implicitly, the method also "returns" the coordinates of point 'circle'.
+    3. Also, implicitly, the radius of the circumscribed circle is "returned" as Z 
+       value of the point 'circle'.
+  */
   private boolean circumCircle(TPoint p, Triangle t, TPoint circle) {
 
     float m1, m2, mx1, mx2, my1, my2;
@@ -276,15 +305,13 @@ public class Triangulator {
       my2 = (t.p2.y + t.p3.y) / 2.0f;
       circle.x = (t.p2.x + t.p1.x) / 2.0f;
       circle.y = m2 * (circle.x - mx2) + my2;
-    }
-    else if (PApplet.abs(t.p3.y - t.p2.y) < PApplet.EPSILON) {
+    } else if (PApplet.abs(t.p3.y - t.p2.y) < PApplet.EPSILON) {
       m1 = -(t.p2.x - t.p1.x) / (t.p2.y - t.p1.y);
       mx1 = (t.p1.x + t.p2.x) / 2.0f;
       my1 = (t.p1.y + t.p2.y) / 2.0f;
       circle.x = (t.p3.x + t.p2.x) / 2.0f;
       circle.y = m1 * (circle.x - mx1) + my1;
-    }
-    else {
+    } else {
       m1 = -(t.p2.x - t.p1.x) / (t.p2.y - t.p1.y);
       m2 = -(t.p3.x - t.p2.x) / (t.p3.y - t.p2.y);
       mx1 = (t.p1.x + t.p2.x) / 2.0f;
