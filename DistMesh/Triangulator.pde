@@ -17,7 +17,7 @@
  *      antiplastik, 28 june 2010, paris-france
  *
  */
-public class Triangulator {
+public class Triangulator {   
   public ArrayList<TEdge>    edges;
   public ArrayList<TPoint>   points;
   public ArrayList<Triangle> triangles;
@@ -153,6 +153,7 @@ public class Triangulator {
       }
     }
     for (TPoint p : points) {
+      p.connectedPoints.clear();
       p.checkedPoints.clear();
     }
   }

@@ -12,9 +12,9 @@ ArrayList<TPoint> points;
 ZoomPan zoomer;    // This should be declared outside any methods.
 PVector mousePos;  // Stores the mouse position.
 
-boolean drawTriangles = true;
+boolean drawTriangles = false;
+boolean drawEdges = true;
 boolean drawPoints = true;
-boolean drawComplete = false;
 boolean drawText = true;
 double delay = millis();
 float textHeight = 8;
@@ -83,16 +83,28 @@ void drawDebugInfo() {
 
 void drawTriangles(){
   // draw edges
-  // pushMatrix();
-  // for (TEdge edge : triangulator.edges) {
-  //     pushStyle();
-  //     strokeWeight(0.5f);
-  //     line(edge.p1.x, edge.p1.y, edge.p2.x, edge.p2.y);
-  //     popStyle();
-  // }
-  // popMatrix();
-
-  if(drawTriangles) {
+  if (drawEdges) {
+    pushMatrix();
+    for (TEdge edge : triangulator.edges) {
+        pushStyle();
+        strokeWeight(0.5f);
+        line(edge.p1.x, edge.p1.y, edge.p2.x, edge.p2.y);
+        if (drawText) {
+          String edgeIndex = str(triangulator.edges.indexOf(edge));
+          String p1Index = str(triangulator.points.indexOf(edge.p1));
+          String p2Index = str(triangulator.points.indexOf(edge.p2));
+          String info = edgeIndex + ":(" + p1Index + "," + p2Index + ")";
+          textAlign(CENTER, CENTER);
+          textSize(textHeight);
+          fill(100, 100, 200);
+          text(info, (edge.p1.x + edge.p2.x) * 0.5f + 5, (edge.p1.y + edge.p2.y) * 0.5f  + 5);
+        }
+        popStyle();
+    }
+    popMatrix();
+  }
+  // draw triangles
+  if (drawTriangles) {
     pushMatrix();
     for (Triangle triangle : triangulator.triangles) {
       pushStyle();
@@ -117,8 +129,7 @@ void drawTriangles(){
     }
     popMatrix();
   }
-
-
+  // draw points
   if (drawPoints) {
     for (TPoint p : triangulator.points) {
       pushStyle();
@@ -141,22 +152,7 @@ void drawTriangles(){
       popStyle();
     }
   }
-  // draw edges
-  for (TEdge edge : triangulator.edges) {
-    pushStyle();
-    if (drawText) {
-      String edgeIndex = str(triangulator.edges.indexOf(edge));
-      String p1Index = str(triangulator.points.indexOf(edge.p1));
-      String p2Index = str(triangulator.points.indexOf(edge.p2));
-      String info = edgeIndex + ":(" + p1Index + "," + p2Index + ")";
-      textAlign(CENTER, CENTER);
-      textSize(textHeight);
-      fill(100, 100, 200);
-      text(info, (edge.p1.x + edge.p2.x) * 0.5f + 5, (edge.p1.y + edge.p2.y) * 0.5f  + 5);
-    }
-    popStyle();
-  }
-
+  // draw SuperTriangle
   // pushStyle();
   // line(triangulator.superTriangle.p1.x, triangulator.superTriangle.p1.y, triangulator.superTriangle.p2.x, triangulator.superTriangle.p2.y);    
   // line(triangulator.superTriangle.p2.x, triangulator.superTriangle.p2.y, triangulator.superTriangle.p3.x, triangulator.superTriangle.p3.y);    
