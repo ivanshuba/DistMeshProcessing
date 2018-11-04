@@ -5,7 +5,7 @@ public class TPoint extends PVector {
   //public float x, y, z;
   ArrayList<TPoint> connectedPoints;
   ArrayList<TPoint> checkedPoints;
-  PVector position;
+  //PVector position;
   PVector velocity;
   PVector acceleration;
 
@@ -18,13 +18,18 @@ public class TPoint extends PVector {
   public TPoint() {
     connectedPoints = new ArrayList<TPoint>(0);
     checkedPoints = new ArrayList<TPoint>(0);
+    velocity = new PVector();
+    acceleration = new PVector();
   }
 
   public TPoint(float x, float y) {
     this.x = x;
     this.y = y;
+    this.z = 0;
     connectedPoints = new ArrayList<TPoint>();
     checkedPoints = new ArrayList<TPoint>(0);
+    velocity = new PVector();
+    acceleration = new PVector();
   }
 
   public TPoint(float x, float y, float z) {
@@ -33,15 +38,19 @@ public class TPoint extends PVector {
     this.z = z;
     connectedPoints = new ArrayList<TPoint>();
     checkedPoints = new ArrayList<TPoint>(0);
+    velocity = new PVector();
+    acceleration = new PVector();
   }
 
-  public TPoint(PVector v) {
-    this.x = v.x;
-    this.y = v.y;
-    this.z = v.z;
-    connectedPoints = new ArrayList<TPoint>();
-    checkedPoints = new ArrayList<TPoint>(0);
-  }
+  // public TPoint(PVector v) {
+  //   this.x = v.x;
+  //   this.y = v.y;
+  //   this.z = v.z;
+  //   connectedPoints = new ArrayList<TPoint>();
+  //   checkedPoints = new ArrayList<TPoint>(0);
+  //   velocity = new PVector();
+  //   acceleration = new PVector();
+  // }
 
   public void addConnectedPoint(TPoint p) {
     if (!connectedPoints.contains(p)) {
@@ -71,7 +80,7 @@ public class TPoint extends PVector {
   public void updatePosition() {
     velocity.add(acceleration);
     velocity.mult(damping);
-    position.add(velocity);
+    this.add(velocity);
     acceleration.mult(0);
   }
 

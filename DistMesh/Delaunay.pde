@@ -26,6 +26,10 @@ public class Delaunay {
   public Delaunay() {
   }
 
+  public void update() {
+    triangulate(points);
+  }
+
   /*
     Triangulation subroutine.
    Takes the ArrayList of vertices (TPoints) as an input.

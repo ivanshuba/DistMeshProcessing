@@ -9,13 +9,15 @@ import org.gicentre.utils.move.*;    // For the zoomer.
 Delaunay triangulation;
 ArrayList<TPoint> points;
 
+DistMeshOptimizer distMeshOptimizer;
+
 ZoomPan zoomer;    // This should be declared outside any methods.
 PVector mousePos;  // Stores the mouse position.
 
 boolean drawTriangles = false;
 boolean drawPoints = true;
 boolean drawEdges = true;
-boolean drawText = true;
+boolean drawText = false;
 double delay = millis();
 float textHeight = 8;
 
@@ -30,11 +32,13 @@ void setup() {
 
   points = new ArrayList<TPoint>();
   //spiralSeed(points);
-  randomSeed(points, 4);
+  randomSeed(points, 300);
 
   triangulation = new Delaunay();
   triangulation.triangulate(points);
   triangulation.debug();
+
+  distMeshOptimizer = new DistMeshOptimizer();
 }
 
 void draw() {
@@ -186,6 +190,9 @@ void keyPressed() {
   }
   if (key == 'p') {
     drawPoints = !drawPoints;
+  }
+  if (key == 'o') {
+    distMeshOptimizer.optimize(triangulation);
   }
 }
 
