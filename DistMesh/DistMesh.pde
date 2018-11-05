@@ -18,6 +18,7 @@ boolean drawTriangles = false;
 boolean drawPoints = true;
 boolean drawEdges = true;
 boolean drawText = false;
+boolean doOptimize = false;
 double delay = millis();
 float textHeight = 8;
 
@@ -29,7 +30,8 @@ void setup() {
   zoomer = new ZoomPan(this);  // Initialise the zoomer.
   zoomer.setMouseMask(SHIFT);  // Only zoom if the shift key is down.
   zoomer.setZoomMouseButton(LEFT);
-
+  zoomer.setZoomScale(0.5);
+  
   points = new ArrayList<TPoint>();
   //spiralSeed(points);
   randomSeed(points, 300);
@@ -49,9 +51,11 @@ void draw() {
   drawTriangulation();
   popMatrix();                           // Restore the unzoomed screen transformation.
 
-  // DistMeshOptimizer.optimize(triangulation);
-
-  surface.setTitle(mousePos.x + ":" + mousePos.y);
+  if (doOptimize) {
+    distMeshOptimizer.optimize(triangulation);
+  }
+  
+  //surface.setTitle(mousePos.x + ":" + mousePos.y);
   drawDebugInfo();
 }
 
@@ -81,11 +85,15 @@ void spiralSeed(ArrayList<TPoint> points) {
 
 void drawDebugInfo() {
   fill(0);
+  textAlign(LEFT, BOTTOM);
   textSize(10);
   text("points.size():" + triangulation.points.size(), 10, 10);
   text("triangles.size():" + triangulation.triangles.size(), 10, 20);
   textSize(16);
-  text(frameRate, 10, 40);
+  text("FPS:" + int(frameRate), width - 60, 20);
+  textSize(36);
+  textAlign(CENTER, CENTER);
+  text("Press 'O' to optimize", width * 0.5, 40);
 }
 
 void drawTriangulation(){
@@ -192,7 +200,7 @@ void keyPressed() {
     drawPoints = !drawPoints;
   }
   if (key == 'o') {
-    distMeshOptimizer.optimize(triangulation);
+    //distMeshOptimizer.optimize(triangulation);
+    doOptimize = !doOptimize;
   }
 }
-
