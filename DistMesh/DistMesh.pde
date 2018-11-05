@@ -87,13 +87,16 @@ void drawDebugInfo() {
   fill(0);
   textAlign(LEFT, BOTTOM);
   textSize(10);
-  text("points.size():" + triangulation.points.size(), 10, 10);
-  text("triangles.size():" + triangulation.triangles.size(), 10, 20);
+  text("points.size():" + triangulation.points.size(), 10, 20);
+  text("triangles.size():" + triangulation.triangles.size(), 10, 30);
+  textSize(26);
+  text("optimize.enabled: " + str(doOptimize).toUpperCase(), 10, height - 10);
   textSize(16);
   text("FPS:" + int(frameRate), width - 60, 20);
-  textSize(36);
+  textSize(28);
   textAlign(CENTER, CENTER);
-  text("Press 'O' to optimize", width * 0.5, 40);
+  text("Press 'O' to enable/disable optimization", width * 0.5, 40);
+  text("Click right mouse button to add point", width * 0.5, 80);
 }
 
 void drawTriangulation(){
