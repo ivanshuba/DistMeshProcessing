@@ -14,6 +14,7 @@ public class TPoint extends PVector {
   // Artificial damping (change to increase convergence)
   float damping = 0.8f;
 
+  float sz = 5;
 
   public TPoint() {
     connectedPoints = new ArrayList<TPoint>(0);
@@ -40,6 +41,14 @@ public class TPoint extends PVector {
     checkedPoints = new ArrayList<TPoint>(0);
     velocity = new PVector();
     acceleration = new PVector();
+  }
+
+  public void setSize(float sz) {
+    this.sz = sz;
+  }
+
+  public void setMass(float mass) {
+    this.mass = mass;
   }
 
   // public TPoint(PVector v) {

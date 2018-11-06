@@ -162,7 +162,7 @@ void drawTriangulation(){
       }
       fill(250);
       //point(p.x, p.y);
-      ellipse(p.x, p.y, 5, 5);
+      ellipse(p.x, p.y, p.sz, p.sz);
       int index = triangulation.points.indexOf(p);
       if (drawText) {
         textAlign(LEFT, CENTER);
@@ -178,9 +178,12 @@ void drawTriangulation(){
 void mousePressed() {
   if (mouseButton == RIGHT) {
     if (millis() - delay > 200) {
-      points.add(new TPoint(mousePos.x, mousePos.y));
+      TPoint point = new TPoint(mousePos.x, mousePos.y);
+      point.setSize(25);
+      point.setMass(100);
+      points.add(point);
       triangulation.triangulate(points);
-      triangulation.debug();
+      //triangulation.debug();
       delay = millis();
     }
   }
