@@ -15,7 +15,7 @@ ZoomPan zoomer;    // This should be declared outside any methods.
 PVector mousePos;  // Stores the mouse position.
 
 boolean drawTriangles = false;
-boolean drawPoints = true;
+boolean drawPoints = false;
 boolean drawEdges = true;
 boolean drawText = false;
 double delay = millis();
@@ -23,7 +23,7 @@ float textHeight = 8;
 
 void setup() {
   size(600, 600);
-
+  surface.setResizable(true);
   textFont(createFont("courier", 128));
 
   zoomer = new ZoomPan(this);  // Initialise the zoomer.
@@ -31,12 +31,14 @@ void setup() {
   zoomer.setZoomMouseButton(LEFT);
 
   points = new ArrayList<TPoint>();
-  //spiralSeed(points);
-  randomSeed(points, 300);
+  // spiralSeed(points, 15, 10000);
+  // randomSeed(points, 300);
+  PImage img = loadImage("E:/WORKSPACES/YandexDisk/WORK/UPWORK/2018/ДЕКАБРЬ/Pointillism/Processing/Strokes/images/dinklage_levels.jpg");
+  imageSeed(points, img);
 
   triangulation = new Delaunay();
   triangulation.triangulate(points);
-  triangulation.debug();
+  //triangulation.debug();
 
   distMeshOptimizer = new DistMeshOptimizer();
 }
@@ -61,13 +63,13 @@ void randomSeed(ArrayList<TPoint> points, int npoints) {
   }
 }
 
-void spiralSeed(ArrayList<TPoint> points) {
+void spiralSeed(ArrayList<TPoint> points, int nturns, int npoints) {
   float x0 = width * 0.5; // spiral center X
   float y0 = height * 0.5; // spiral center Y
   float radius = (width > height) ? width * 0.3 : height * 0.3;
-  float nturns = 2;   // non-dimensional
+  // float nturns = 2;   // non-dimensional
   float radialStep = radius / nturns; // px
-  int npoints = 6;
+  // int npoints = 6;
 
   for (int i = 0; i < npoints; i++) {
     float theta = map(i, 0, npoints - 1, 0, TWO_PI * nturns);
@@ -76,6 +78,33 @@ void spiralSeed(ArrayList<TPoint> points) {
     float y = y0 + rho * sin(theta);
     TPoint point = new TPoint(x, y);
     points.add(point);
+  }
+}
+
+void imageSeed(ArrayList<TPoint> points, PImage img) {
+  int counter = 0;
+  for (int i = 0; i < img.width; i++) {
+    for (int j = 0; j < img.height; j++) {
+      int bright = round(brightness(color(img.get(i, j))));
+      if (bright < 20) {
+        if (random(1000) < 50) {
+          points.add(new TPoint(i, j));
+          println(++counter);
+        }
+      }
+      if (bright >= 20 && bright < 100) {
+        if (random(5000) < 20) {
+          points.add(new TPoint(i, j));
+          println(++counter);
+        }
+      }
+      if (bright >= 100) {
+        if (random(10000) < 1) {
+          points.add(new TPoint(i, j));
+          println(++counter);
+        }
+      }
+    }
   }
 }
 
@@ -169,7 +198,7 @@ void mousePressed() {
     if (millis() - delay > 200) {
       points.add(new TPoint(mousePos.x, mousePos.y));
       triangulation.triangulate(points);
-      triangulation.debug();
+      //triangulation.debug();
       delay = millis();
     }
   }
@@ -195,4 +224,3 @@ void keyPressed() {
     distMeshOptimizer.optimize(triangulation);
   }
 }
-
