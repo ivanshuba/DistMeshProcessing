@@ -14,7 +14,7 @@ On the [Processing](www.processing.org) website you can find a lot of useful inf
 3. Go inside the DistMesh folder.
 4. Double click the DistMesh.pde file. This will launch the Processing evironment and open this project inside IDE (Processing editor). 
 5. To run the sketch:
-   - press "Run" button (at the top left corner of the Processing IDE gui);
+   - press "Run" button (at the top left corner of the Processing IDE);
     or  
    - go to "Sketch" -> "Run" menu;
     or
